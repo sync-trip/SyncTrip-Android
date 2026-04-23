@@ -12,6 +12,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.TestAppJSH">
         <activity
+            android:name=".CreateRoomActivity"
+            android:exported="false" />
+        <activity
+            android:name=".SubActivity"
+            android:exported="false" />
+        <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>

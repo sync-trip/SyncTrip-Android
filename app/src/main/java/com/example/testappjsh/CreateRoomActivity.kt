@@ -6,23 +6,29 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 
-class MainActivity : AppCompatActivity() {
+class CreateRoomActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContentView(R.layout.activity_main)
+        setContentView(R.layout.activity_create_room)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-        // 버튼 이름표(ID)를 찾아서 연결합니다.
-        val myButton = findViewById<android.widget.Button>(R.id.btnNext)
+        val btnCreateDone = findViewById<android.widget.Button>(R.id.btnCreateDone)
 
-        // 버튼을 눌렀을 때 할 일을 정합니다.
-        myButton.setOnClickListener {
-            val intent = android.content.Intent(this, CreateRoomActivity::class.java)
+        btnCreateDone.setOnClickListener {
+            // 안내 문구 띄우기
+            android.widget.Toast.makeText(this, "여행 방이 생성되었습니다!", android.widget.Toast.LENGTH_SHORT)
+                .show()
+
+            // SubActivity(방 내부 화면)로 이동하기
+            val intent = android.content.Intent(this, SubActivity::class.java)
             startActivity(intent)
+
+            // 현재 방 만들기 화면은 임무를 다했으니 닫기 (뒤로가기 방지)
+            finish()
         }
     }
 }

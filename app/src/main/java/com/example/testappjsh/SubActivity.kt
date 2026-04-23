@@ -6,23 +6,15 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 
-class MainActivity : AppCompatActivity() {
+class SubActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContentView(R.layout.activity_main)
+        setContentView(R.layout.activity_sub)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
-        }
-        // 버튼 이름표(ID)를 찾아서 연결합니다.
-        val myButton = findViewById<android.widget.Button>(R.id.btnNext)
-
-        // 버튼을 눌렀을 때 할 일을 정합니다.
-        myButton.setOnClickListener {
-            val intent = android.content.Intent(this, CreateRoomActivity::class.java)
-            startActivity(intent)
         }
     }
 }
