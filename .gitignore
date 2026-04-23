@@ -1,3 +1,36 @@
+### IntelliJ IDEA ###
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+### Kotlin ###
+.kotlin
+
+### Eclipse ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+### VS Code ###
+.vscode/
+
+### Mac OS ###
+.DS_Store
+=======
 *.iml
 .gradle
 /local.properties
@@ -13,3 +46,4 @@
 .externalNativeBuild
 .cxx
 local.properties
+>>>>>>> c19a8f7ffb0347c244c98115dbc0538a53d64d9a
