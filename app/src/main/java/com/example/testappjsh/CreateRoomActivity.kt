@@ -11,23 +11,24 @@ class CreateRoomActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_create_room)
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
         val btnCreateDone = findViewById<android.widget.Button>(R.id.btnCreateDone)
 
         btnCreateDone.setOnClickListener {
-            // 안내 문구 띄우기
-            android.widget.Toast.makeText(this, "여행 방이 생성되었습니다!", android.widget.Toast.LENGTH_SHORT)
-                .show()
+            // 1. 입력값 가져오기
+            val roomName = findViewById<android.widget.EditText>(R.id.etRoomName).text.toString()
+            val country = findViewById<android.widget.EditText>(R.id.etCountry).text.toString()
+            val city = findViewById<android.widget.EditText>(R.id.etCity).text.toString()
 
-            // SubActivity(방 내부 화면)로 이동하기
+            // 2. Toast
+            android.widget.Toast.makeText(this, "여행 방이 생성되었습니다!", android.widget.Toast.LENGTH_SHORT).show()
+
+            // 3. Intent에 담아서 출발
             val intent = android.content.Intent(this, SubActivity::class.java)
+            intent.putExtra("ROOM_NAME", roomName)  // 키="ROOM_NAME", 값=입력한 방이름
+            intent.putExtra("COUNTRY", country)
+            intent.putExtra("CITY", city)
             startActivity(intent)
 
-            // 현재 방 만들기 화면은 임무를 다했으니 닫기 (뒤로가기 방지)
             finish()
         }
     }
