@@ -6,6 +6,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.testappjsh.dto.Room
@@ -33,7 +34,7 @@ class MainActivity : AppCompatActivity() {
 
         // RecyclerView 설정
         val rvRoomList = findViewById<RecyclerView>(R.id.rvRoomList)
-        rvRoomList.layoutManager = LinearLayoutManager(this)
+        rvRoomList.layoutManager = GridLayoutManager(this, 2)
         rvRoomList.adapter = RoomAdapter(roomList) { room ->
             // 카드 클릭 시 SubActivity로 이동
             val intent = android.content.Intent(this, SubActivity::class.java)

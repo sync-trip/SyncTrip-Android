@@ -1,59 +1,67 @@
 package com.example.testappjsh
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.example.testappjsh.dto.Schedule
+import com.google.android.material.tabs.TabLayout
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [ScheduleFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class ScheduleFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_schedule, container, false)
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment ScheduleFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            ScheduleFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        // 임시 일정 데이터 (나중에 서버에서 받아올 것)
+        val day1 = listOf(
+            Schedule("09:00", "경복궁", 90, 15),
+            Schedule("11:00", "점심식사", 60, 20),
+            Schedule("14:00", "남산타워", 120, 30, "🌙 늦은 일정"),
+            Schedule("17:00", "명동쇼핑", 60, 0)
+        )
+
+        val day2 = listOf(
+            Schedule("09:00", "북촌한옥마을", 90, 20),
+            Schedule("11:30", "점심식사", 60, 15),
+            Schedule("14:00", "인사동", 90, 0)
+        )
+
+        val day3 = listOf(
+            Schedule("10:00", "한강공원", 120, 25),
+            Schedule("13:00", "점심식사", 60, 20),
+            Schedule("15:00", "롯데월드", 180, 0)
+        )
+
+        val allDays = listOf(day1, day2, day3)
+
+        // RecyclerView 설정
+        val rvScheduleList = view.findViewById<RecyclerView>(R.id.rvScheduleList)
+        rvScheduleList.layoutManager = LinearLayoutManager(requireContext())
+        rvScheduleList.adapter = ScheduleAdapter(day1) // 처음엔 1일차
+
+        // TabLayout 설정
+        val tabLayout = view.findViewById<TabLayout>(R.id.tabLayout)
+        allDays.forEachIndexed { index, _ ->
+            tabLayout.addTab(tabLayout.newTab().setText("${index + 1}일차"))
+        }
+
+        // 탭 클릭 시 해당 일차 일정으로 변경
+        tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab) {
+                rvScheduleList.adapter = ScheduleAdapter(allDays[tab.position])
             }
+            override fun onTabUnselected(tab: TabLayout.Tab) {}
+            override fun onTabReselected(tab: TabLayout.Tab) {}
+        })
     }
 }
