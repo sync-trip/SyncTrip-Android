@@ -1,10 +1,11 @@
-package com.example.testappjsh
+package com.example.testappjsh.adapter
 
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.example.testappjsh.R
 import com.example.testappjsh.dto.Schedule
 
 class ScheduleAdapter(

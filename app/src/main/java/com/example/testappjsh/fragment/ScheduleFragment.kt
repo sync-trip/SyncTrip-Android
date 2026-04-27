@@ -1,4 +1,4 @@
-package com.example.testappjsh
+package com.example.testappjsh.fragment
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -7,6 +7,8 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.testappjsh.R
+import com.example.testappjsh.adapter.ScheduleAdapter
 import com.example.testappjsh.dto.Schedule
 import com.google.android.material.tabs.TabLayout
 

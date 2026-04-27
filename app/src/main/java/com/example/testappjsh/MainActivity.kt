@@ -1,5 +1,6 @@
 package com.example.testappjsh
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.activity.enableEdgeToEdge
@@ -9,6 +10,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.testappjsh.adapter.RoomAdapter
 import com.example.testappjsh.dto.Room
 
 class MainActivity : AppCompatActivity() {
@@ -37,7 +39,7 @@ class MainActivity : AppCompatActivity() {
         rvRoomList.layoutManager = GridLayoutManager(this, 2)
         rvRoomList.adapter = RoomAdapter(roomList) { room ->
             // 카드 클릭 시 SubActivity로 이동
-            val intent = android.content.Intent(this, SubActivity::class.java)
+            val intent = Intent(this, SubActivity::class.java)
             intent.putExtra("ROOM_NAME", room.roomName)
             startActivity(intent)
         }
