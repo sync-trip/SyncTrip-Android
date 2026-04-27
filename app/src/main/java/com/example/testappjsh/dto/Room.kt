@@ -1,4 +1,4 @@
-package com.example.testappjsh
+package com.example.testappjsh.dto
 
 data class Room(
     val roomName: String,   // 여행 이름

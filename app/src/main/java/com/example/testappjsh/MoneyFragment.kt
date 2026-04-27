@@ -1,59 +1,36 @@
 package com.example.testappjsh
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.example.testappjsh.dto.Expense
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [MoneyFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class MoneyFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_money, container, false)
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment MoneyFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            MoneyFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
-            }
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        // 임시 지출 데이터 (나중에 서버에서 받아올 것)
+        val expenseList = mutableListOf(
+            Expense("점심식사", 45000, "김철수", listOf("김철수", "이영희", "박민수")),
+            Expense("택시비", 12000, "이영희", listOf("김철수", "이영희")),
+            Expense("저녁식사", 60000, "박민수", listOf("김철수", "이영희", "박민수"))
+        )
+
+        // RecyclerView 연결
+        val rvExpenseList = view.findViewById<RecyclerView>(R.id.rvExpenseList)
+        rvExpenseList.layoutManager = LinearLayoutManager(requireContext())
+        rvExpenseList.adapter = ExpenseAdapter(expenseList)
     }
 }
