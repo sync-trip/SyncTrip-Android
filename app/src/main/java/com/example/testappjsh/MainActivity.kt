@@ -59,5 +59,36 @@ class MainActivity : AppCompatActivity() {
             val intent = android.content.Intent(this, CreateRoomActivity::class.java)
             startActivity(intent)
         }
+        // 초대 코드로 참여 버튼
+        val btnJoinRoom = findViewById<android.widget.Button>(R.id.btnJoinRoom)
+        btnJoinRoom.setOnClickListener {
+            // 초대 코드 입력 다이얼로그 표시
+            val input = android.widget.EditText(this)
+            input.hint = "초대 코드 6자리 입력"
+            input.inputType = android.text.InputType.TYPE_CLASS_TEXT
+
+            android.app.AlertDialog.Builder(this)
+                .setTitle("초대 코드로 참여")
+                .setView(input)
+                .setPositiveButton("참여하기") { _, _ ->
+                    val code = input.text.toString()
+                    if (code.length == 6) {
+                        // 나중에 서버에 코드 확인 요청
+                        android.widget.Toast.makeText(
+                            this,
+                            "코드 [$code] 확인 중... (서버 연동 후 완성)",
+                            android.widget.Toast.LENGTH_SHORT
+                        ).show()
+                    } else {
+                        android.widget.Toast.makeText(
+                            this,
+                            "6자리 코드를 입력해주세요!",
+                            android.widget.Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+                .setNegativeButton("취소", null)
+                .show()
+        }
     }
 }
