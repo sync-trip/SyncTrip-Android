@@ -90,5 +90,29 @@ class MainActivity : AppCompatActivity() {
                 .setNegativeButton("취소", null)
                 .show()
         }
+        // 서버 연결 테스트
+        RetrofitClient.api.getTest().enqueue(object : retrofit2.Callback<String> {
+            override fun onResponse(call: retrofit2.Call<String>, response: retrofit2.Response<String>) {
+                if (response.isSuccessful) {
+                    android.util.Log.d("ServerTest", "서버 연결 성공! 응답: ${response.body()}")
+                    android.widget.Toast.makeText(
+                        this@MainActivity,
+                        "서버 연결 성공! 🎉",
+                        android.widget.Toast.LENGTH_SHORT
+                    ).show()
+                } else {
+                    android.util.Log.d("ServerTest", "응답 실패: ${response.code()}")
+                }
+            }
+
+            override fun onFailure(call: retrofit2.Call<String>, t: Throwable) {
+                android.util.Log.e("ServerTest", "서버 연결 실패: ${t.message}")
+                android.widget.Toast.makeText(
+                    this@MainActivity,
+                    "서버 연결 실패 ❌",
+                    android.widget.Toast.LENGTH_SHORT
+                ).show()
+            }
+        })
     }
 }
