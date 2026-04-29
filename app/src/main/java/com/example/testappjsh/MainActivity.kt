@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.testappjsh.adapter.RoomAdapter
 import com.example.testappjsh.dto.Room
+import com.example.testappjsh.dto.TestResponse
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -91,8 +92,8 @@ class MainActivity : AppCompatActivity() {
                 .show()
         }
         // 서버 연결 테스트
-        RetrofitClient.api.getTest().enqueue(object : retrofit2.Callback<String> {
-            override fun onResponse(call: retrofit2.Call<String>, response: retrofit2.Response<String>) {
+        RetrofitClient.api.getTest().enqueue(object : retrofit2.Callback<TestResponse> {
+            override fun onResponse(call: retrofit2.Call<TestResponse>, response: retrofit2.Response<TestResponse>) {
                 if (response.isSuccessful) {
                     android.util.Log.d("ServerTest", "서버 연결 성공! 응답: ${response.body()}")
                     android.widget.Toast.makeText(
@@ -100,18 +101,10 @@ class MainActivity : AppCompatActivity() {
                         "서버 연결 성공! 🎉",
                         android.widget.Toast.LENGTH_SHORT
                     ).show()
-                } else {
-                    android.util.Log.d("ServerTest", "응답 실패: ${response.code()}")
                 }
             }
-
-            override fun onFailure(call: retrofit2.Call<String>, t: Throwable) {
+            override fun onFailure(call: retrofit2.Call<TestResponse>, t: Throwable) {
                 android.util.Log.e("ServerTest", "서버 연결 실패: ${t.message}")
-                android.widget.Toast.makeText(
-                    this@MainActivity,
-                    "서버 연결 실패 ❌",
-                    android.widget.Toast.LENGTH_SHORT
-                ).show()
             }
         })
     }
