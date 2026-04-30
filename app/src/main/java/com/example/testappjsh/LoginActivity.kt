@@ -6,48 +6,69 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.kakao.sdk.common.KakaoSdk
 import com.kakao.sdk.user.UserApiClient
+import com.example.testappjsh.dto.KakaoLoginRequest
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import com.example.testappjsh.dto.KakaoLoginResponse
 
 class LoginActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
-        // 카카오 SDK 초기화
         KakaoSdk.init(this, "5215e216aaf94a9f15cb57f5256a1765")
 
-        // 카카오 로그인 버튼
         val btnKakaoLogin = findViewById<Button>(R.id.btnKakaoLogin)
         btnKakaoLogin.setOnClickListener {
-            // 카카오톡 설치 여부 확인
             if (UserApiClient.instance.isKakaoTalkLoginAvailable(this)) {
-                // 카카오톡으로 로그인
                 UserApiClient.instance.loginWithKakaoTalk(this) { token, error ->
                     if (error != null) {
                         Toast.makeText(this, "카카오톡 로그인 실패: ${error.message}", Toast.LENGTH_SHORT).show()
                     } else if (token != null) {
-                        Toast.makeText(this, "카카오톡 로그인 성공!", Toast.LENGTH_SHORT).show()
-                        goToMain()
+                        sendTokenToServer(token.accessToken)
                     }
                 }
             } else {
-                // 카카오 계정으로 로그인 (카카오톡 미설치 시)
                 UserApiClient.instance.loginWithKakaoAccount(this) { token, error ->
                     if (error != null) {
                         Toast.makeText(this, "카카오 로그인 실패: ${error.message}", Toast.LENGTH_SHORT).show()
                     } else if (token != null) {
-                        Toast.makeText(this, "카카오 로그인 성공!", Toast.LENGTH_SHORT).show()
-                        goToMain()
+                        sendTokenToServer(token.accessToken)
                     }
                 }
             }
         }
 
-        // 구글 로그인 버튼
         val btnGoogleLogin = findViewById<Button>(R.id.btnGoogleLogin)
         btnGoogleLogin.setOnClickListener {
             Toast.makeText(this, "구글 로그인 준비 중!", Toast.LENGTH_SHORT).show()
             goToMain()
         }
+    }
+
+    // 카카오 토큰을 서버로 전송
+    private fun sendTokenToServer(accessToken: String) {
+        android.util.Log.d("KakaoToken", "토큰 서버 전송 중: $accessToken")
+
+        RetrofitClient.api.kakaoLogin(KakaoLoginRequest(accessToken))
+            .enqueue(object : Callback<KakaoLoginResponse> {
+                override fun onResponse(call: Call<KakaoLoginResponse>, response: Response<KakaoLoginResponse>) {
+                    if (response.isSuccessful) {
+                        val jwt = response.body()?.jwt
+                        android.util.Log.d("KakaoToken", "JWT 받음: $jwt")
+                        Toast.makeText(this@LoginActivity, "로그인 성공!", Toast.LENGTH_SHORT).show()
+                        goToMain()
+                    } else {
+                        Toast.makeText(this@LoginActivity, "서버 로그인 실패: ${response.code()}", Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+                override fun onFailure(call: Call<KakaoLoginResponse>, t: Throwable) {
+                    android.util.Log.e("KakaoToken", "서버 전송 실패: ${t.message}")
+                    Toast.makeText(this@LoginActivity, "서버 연결 실패!", Toast.LENGTH_SHORT).show()
+                }
+            })
     }
 
     private fun goToMain() {
