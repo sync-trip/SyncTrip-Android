@@ -47,7 +47,6 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
-    // 카카오 토큰을 서버로 전송
     private fun sendTokenToServer(accessToken: String) {
         android.util.Log.d("KakaoToken", "토큰 서버 전송 중: $accessToken")
 
@@ -55,8 +54,16 @@ class LoginActivity : AppCompatActivity() {
             .enqueue(object : Callback<KakaoLoginResponse> {
                 override fun onResponse(call: Call<KakaoLoginResponse>, response: Response<KakaoLoginResponse>) {
                     if (response.isSuccessful) {
-                        val jwt = response.body()?.jwt
-                        android.util.Log.d("KakaoToken", "JWT 받음: $jwt")
+                        val body = response.body()
+                        val accessToken = body?.accessToken
+                        val userId = body?.userId
+
+                        if (accessToken != null && userId != null) {
+                            TokenManager.saveToken(this@LoginActivity, accessToken)
+                            TokenManager.saveUserId(this@LoginActivity, userId)
+                        }
+
+                        android.util.Log.d("KakaoToken", "JWT 받음: $accessToken")
                         Toast.makeText(this@LoginActivity, "로그인 성공!", Toast.LENGTH_SHORT).show()
                         goToMain()
                     } else {

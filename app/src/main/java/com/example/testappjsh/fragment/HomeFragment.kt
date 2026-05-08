@@ -38,7 +38,7 @@ class HomeFragment : Fragment() {
         )
 
         // 임시 그룹 상태 (나중에 서버에서 받아올 것)
-        val currentStatus = GroupStatus.TRAVELLING
+        val currentStatus = GroupStatus.PLANNING
 
         // 담은 장소 개수 표시
         val tvMyPlaceTitle = view.findViewById<TextView>(R.id.tvMyPlaceTitle)

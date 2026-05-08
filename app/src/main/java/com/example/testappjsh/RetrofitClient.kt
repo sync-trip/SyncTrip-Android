@@ -6,7 +6,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 object RetrofitClient {
 
     // 테스트 서버 주소
-    private const val BASE_URL = "https://test.sync-trip.app/"
+    private const val BASE_URL = "http://test.sync-trip.app/"
 
     // Retrofit 인스턴스 생성
     private val retrofit: Retrofit = Retrofit.Builder()

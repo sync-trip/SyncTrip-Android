@@ -8,13 +8,21 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.testappjsh.adapter.RoomAdapter
+import com.example.testappjsh.dto.GroupListResponse
 import com.example.testappjsh.dto.Room
 import com.example.testappjsh.dto.TestResponse
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class MainActivity : AppCompatActivity() {
+
+    private lateinit var rvRoomList: RecyclerView
+    private lateinit var tvEmpty: android.widget.TextView
+    private val roomList = mutableListOf<Room>()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -25,45 +33,23 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
-        // 임시 방 목록 데이터 (나중에 서버에서 받아올 것)
-        val roomList = mutableListOf(
-            Room("제주도 여행", "한국", "제주", 4),
-            Room("도쿄 여행", "일본", "도쿄", 3),
-            Room("뉴욕 여행", "미국", "뉴욕", 5)
-        )
-
-        // 빈 화면 텍스트
-        val tvEmpty = findViewById<android.widget.TextView>(R.id.tvEmpty)
-
-        // RecyclerView 설정
-        val rvRoomList = findViewById<RecyclerView>(R.id.rvRoomList)
+        tvEmpty = findViewById(R.id.tvEmpty)
+        rvRoomList = findViewById(R.id.rvRoomList)
         rvRoomList.layoutManager = GridLayoutManager(this, 2)
         rvRoomList.adapter = RoomAdapter(roomList) { room ->
-            // 카드 클릭 시 SubActivity로 이동
             val intent = Intent(this, SubActivity::class.java)
             intent.putExtra("ROOM_NAME", room.roomName)
+            intent.putExtra("GROUP_ID", room.groupId)
             startActivity(intent)
-        }
-
-        // 방 있으면 빈 화면 숨기기
-        if (roomList.isEmpty()) {
-            tvEmpty.visibility = View.VISIBLE
-            rvRoomList.visibility = View.GONE
-        } else {
-            tvEmpty.visibility = View.GONE
-            rvRoomList.visibility = View.VISIBLE
         }
 
         // 방 만들기 버튼
-        val myButton = findViewById<android.widget.Button>(R.id.btnNext)
-        myButton.setOnClickListener {
-            val intent = android.content.Intent(this, CreateRoomActivity::class.java)
-            startActivity(intent)
+        findViewById<android.widget.Button>(R.id.btnNext).setOnClickListener {
+            startActivity(Intent(this, CreateRoomActivity::class.java))
         }
+
         // 초대 코드로 참여 버튼
-        val btnJoinRoom = findViewById<android.widget.Button>(R.id.btnJoinRoom)
-        btnJoinRoom.setOnClickListener {
-            // 초대 코드 입력 다이얼로그 표시
+        findViewById<android.widget.Button>(R.id.btnJoinRoom).setOnClickListener {
             val input = android.widget.EditText(this)
             input.hint = "초대 코드 6자리 입력"
             input.inputType = android.text.InputType.TYPE_CLASS_TEXT
@@ -74,38 +60,77 @@ class MainActivity : AppCompatActivity() {
                 .setPositiveButton("참여하기") { _, _ ->
                     val code = input.text.toString()
                     if (code.length == 6) {
-                        // 나중에 서버에 코드 확인 요청
-                        android.widget.Toast.makeText(
-                            this,
-                            "코드 [$code] 확인 중... (서버 연동 후 완성)",
-                            android.widget.Toast.LENGTH_SHORT
-                        ).show()
+                        android.widget.Toast.makeText(this, "코드 [$code] 확인 중...", android.widget.Toast.LENGTH_SHORT).show()
                     } else {
-                        android.widget.Toast.makeText(
-                            this,
-                            "6자리 코드를 입력해주세요!",
-                            android.widget.Toast.LENGTH_SHORT
-                        ).show()
+                        android.widget.Toast.makeText(this, "6자리 코드를 입력해주세요!", android.widget.Toast.LENGTH_SHORT).show()
                     }
                 }
                 .setNegativeButton("취소", null)
                 .show()
         }
-        // 서버 연결 테스트
-        RetrofitClient.api.getTest().enqueue(object : retrofit2.Callback<TestResponse> {
-            override fun onResponse(call: retrofit2.Call<TestResponse>, response: retrofit2.Response<TestResponse>) {
-                if (response.isSuccessful) {
-                    android.util.Log.d("ServerTest", "서버 연결 성공! 응답: ${response.body()}")
-                    android.widget.Toast.makeText(
-                        this@MainActivity,
-                        "서버 연결 성공! 🎉",
-                        android.widget.Toast.LENGTH_SHORT
-                    ).show()
+
+        // 그룹 목록 불러오기
+        loadMyGroups()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // 방 만들고 돌아왔을 때 목록 새로고침
+        loadMyGroups()
+    }
+
+    private fun loadMyGroups() {
+        RetrofitClient.api.getMyGroups()
+            .enqueue(object : Callback<GroupListResponse> {
+                override fun onResponse(call: Call<GroupListResponse>, response: Response<GroupListResponse>) {
+                    if (response.isSuccessful) {
+                        val groups = response.body()?.groups ?: emptyList()
+                        roomList.clear()
+                        groups.forEach {
+                            roomList.add(Room(
+                                groupId = it.groupId,
+                                roomName = it.title,
+                                country = "",
+                                city = it.destination,
+                                memberCount = it.memberCount,
+                                status = it.status
+                            ))
+                        }
+                        rvRoomList.adapter?.notifyDataSetChanged()
+                        updateEmptyView()
+                        android.util.Log.d("GroupList", "그룹 목록 로드 성공! ${groups.size}개")
+                    } else {
+                        android.util.Log.e("GroupList", "그룹 목록 로드 실패: ${response.code()}")
+                        showTempData()
+                    }
                 }
-            }
-            override fun onFailure(call: retrofit2.Call<TestResponse>, t: Throwable) {
-                android.util.Log.e("ServerTest", "서버 연결 실패: ${t.message}")
-            }
-        })
+
+                override fun onFailure(call: Call<GroupListResponse>, t: Throwable) {
+                    android.util.Log.e("GroupList", "서버 연결 실패: ${t.message}")
+                    showTempData()
+                }
+            })
+    }
+
+    private fun showTempData() {
+        // 서버 연동 전 임시 데이터
+        roomList.clear()
+        roomList.addAll(mutableListOf(
+            Room(1, "제주도 여행", "한국", "제주", 4),
+            Room(2, "도쿄 여행", "일본", "도쿄", 3),
+            Room(3, "뉴욕 여행", "미국", "뉴욕", 5)
+        ))
+        rvRoomList.adapter?.notifyDataSetChanged()
+        updateEmptyView()
+    }
+
+    private fun updateEmptyView() {
+        if (roomList.isEmpty()) {
+            tvEmpty.visibility = View.VISIBLE
+            rvRoomList.visibility = View.GONE
+        } else {
+            tvEmpty.visibility = View.GONE
+            rvRoomList.visibility = View.VISIBLE
+        }
     }
 }

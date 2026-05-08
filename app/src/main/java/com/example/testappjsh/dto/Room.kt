@@ -1,8 +1,10 @@
 package com.example.testappjsh.dto
 
 data class Room(
-    val roomName: String,   // 여행 이름
-    val country: String,    // 나라
-    val city: String,       // 도시
-    val memberCount: Int    // 인원
+    val groupId: Long = 0,
+    val roomName: String,
+    val country: String,
+    val city: String,
+    val memberCount: Int,
+    val status: String = "PLANNING"
 )

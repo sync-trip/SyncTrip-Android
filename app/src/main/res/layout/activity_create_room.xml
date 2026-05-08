@@ -69,6 +69,53 @@
             android:inputType="number"
             app:layout_constraintTop_toBottomOf="@id/etCity" />
 
+        <TextView
+            android:id="@+id/tvStartDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="시작일 선택"
+            android:padding="12dp"
+            android:background="#EEEEEE"
+            android:textSize="16sp"
+            app:layout_constraintTop_toBottomOf="@id/etMemberCount" />
+
+        <TextView
+            android:id="@+id/tvEndDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="종료일 선택"
+            android:padding="12dp"
+            android:background="#EEEEEE"
+            android:textSize="16sp"
+            app:layout_constraintTop_toBottomOf="@id/tvStartDate" />
+
+        <RadioGroup
+            android:id="@+id/rgTravelStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:orientation="horizontal"
+            app:layout_constraintTop_toBottomOf="@id/tvEndDate">
+
+            <RadioButton
+                android:id="@+id/rbRelaxed"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="여유롭게 😊" />
+
+            <RadioButton
+                android:id="@+id/rbPacked"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="빡빡하게 💪"
+                android:checked="true" />
+
+        </RadioGroup>
+
         <Button
             android:id="@+id/btnCreateDone"
             android:layout_width="match_parent"
@@ -78,7 +125,7 @@
             android:backgroundTint="#4CAF50"
             android:textSize="18sp"
             android:textStyle="bold"
-            app:layout_constraintTop_toBottomOf="@id/etMemberCount" />
+            app:layout_constraintTop_toBottomOf="@id/rgTravelStyle" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>
