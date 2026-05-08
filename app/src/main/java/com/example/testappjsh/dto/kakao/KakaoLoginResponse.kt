@@ -1,4 +1,4 @@
-package com.example.testappjsh.dto
+package com.example.testappjsh.dto.kakao
 
 data class KakaoLoginResponse(
     val userId: Long,

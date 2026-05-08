@@ -1,5 +1,6 @@
 package com.example.testappjsh.fragment
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -9,13 +10,13 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.testappjsh.PlaceSearchActivity
 import com.example.testappjsh.R
 import com.example.testappjsh.adapter.PlaceAdapter
 import com.example.testappjsh.dto.Place
 
 class HomeFragment : Fragment() {
 
-    // 의사코드 groups.status ENUM 참고
     enum class GroupStatus {
         PLANNING, VOTING, GENERATING, TRAVELLING, DONE
     }
@@ -30,21 +31,17 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // 임시 데이터 (나중에 서버에서 받아올 것)
         val myPlaces = mutableListOf(
             Place("경복궁", "문화"),
             Place("남산타워", "관광"),
             Place("명동", "쇼핑")
         )
 
-        // 임시 그룹 상태 (나중에 서버에서 받아올 것)
         val currentStatus = GroupStatus.PLANNING
 
-        // 담은 장소 개수 표시
         val tvMyPlaceTitle = view.findViewById<TextView>(R.id.tvMyPlaceTitle)
         tvMyPlaceTitle.text = "📍 내가 담은 장소 (${myPlaces.size}/5)"
 
-        // RecyclerView 연결
         val rvMyPlaces = view.findViewById<RecyclerView>(R.id.rvMyPlaces)
         rvMyPlaces.layoutManager = LinearLayoutManager(requireContext())
         rvMyPlaces.adapter = PlaceAdapter(myPlaces)
@@ -52,11 +49,8 @@ class HomeFragment : Fragment() {
         // 장소 담기 버튼
         val btnAddPlace = view.findViewById<Button>(R.id.btnAddPlace)
         btnAddPlace.setOnClickListener {
-            android.widget.Toast.makeText(
-                requireContext(),
-                "장소 검색 화면 준비 중!",
-                android.widget.Toast.LENGTH_SHORT
-            ).show()
+            val intent = Intent(requireContext(), PlaceSearchActivity::class.java)
+            startActivity(intent)
         }
 
         // 투표 시작 버튼
@@ -83,7 +77,6 @@ class HomeFragment : Fragment() {
             ).show()
         }
 
-        // 그룹 상태에 따라 UI 변경
         val tvGroupStatus = view.findViewById<TextView>(R.id.tvGroupStatus)
         val btnGenerateSchedule = view.findViewById<Button>(R.id.btnGenerateSchedule)
 
@@ -96,13 +89,6 @@ class HomeFragment : Fragment() {
         )
     }
 
-    // 그룹 상태별 UI 업데이트
-    // 의사코드 groups.status ENUM 참고:
-    // PLANNING → 장소 담기 중
-    // VOTING → 투표 진행 중
-    // GENERATING → 일정 생성 중
-    // TRAVELLING → 여행 중
-    // DONE → 여행 완료
     private fun updateStatusUI(
         status: GroupStatus,
         tvGroupStatus: TextView,
@@ -163,7 +149,6 @@ class HomeFragment : Fragment() {
                 btnGenerateSchedule.backgroundTintList =
                     android.content.res.ColorStateList.valueOf(0xFF4CAF50.toInt())
                 btnGenerateSchedule.setOnClickListener {
-                    // 나중에 ScheduleFragment로 이동
                     android.widget.Toast.makeText(
                         requireContext(),
                         "일정 화면으로 이동!",

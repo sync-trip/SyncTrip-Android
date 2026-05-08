@@ -1,8 +1,8 @@
 package com.example.testappjsh
 
 import com.example.testappjsh.dto.TestResponse
-import com.example.testappjsh.dto.KakaoLoginRequest
-import com.example.testappjsh.dto.KakaoLoginResponse
+import com.example.testappjsh.dto.kakao.KakaoLoginRequest
+import com.example.testappjsh.dto.kakao.KakaoLoginResponse
 import com.example.testappjsh.dto.CreateGroupRequest
 import com.example.testappjsh.dto.CreateGroupResponse
 import com.example.testappjsh.dto.GroupListResponse

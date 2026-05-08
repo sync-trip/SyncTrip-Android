@@ -6,17 +6,21 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.kakao.sdk.common.KakaoSdk
 import com.kakao.sdk.user.UserApiClient
-import com.example.testappjsh.dto.KakaoLoginRequest
+import com.example.testappjsh.dto.kakao.KakaoLoginRequest
+import com.kakao.vectormap.KakaoMapSdk
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import com.example.testappjsh.dto.KakaoLoginResponse
+import com.example.testappjsh.dto.kakao.KakaoLoginResponse
 
 class LoginActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
+        // 카카오맵 SDK 초기화
+        KakaoMapSdk.init(this, "5215e216aaf94a9f15cb57f5256a1765")
+        // 카카오 로그인 SDK 초기화
         KakaoSdk.init(this, "5215e216aaf94a9f15cb57f5256a1765")
 
         val btnKakaoLogin = findViewById<Button>(R.id.btnKakaoLogin)

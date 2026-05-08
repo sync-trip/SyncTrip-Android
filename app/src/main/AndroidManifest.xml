@@ -15,6 +15,9 @@
         <meta-data
             android:name="com.kakao.sdk.AppKey"
             android:value="5215e216aaf94a9f15cb57f5256a1765" />
+        <meta-data
+            android:name="com.kakao.vectormap.APP_KEY"
+            android:value="5215e216aaf94a9f15cb57f5256a1765" />
         <activity
             android:name=".LoginActivity"
             android:exported="true">
@@ -36,6 +39,9 @@
                     android:scheme="kakao5215e216aaf94a9f15cb57f5256a1765" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".PlaceSearchActivity"
+            android:exported="false" />
         <activity
             android:name=".CreateRoomActivity"
             android:exported="false" />
