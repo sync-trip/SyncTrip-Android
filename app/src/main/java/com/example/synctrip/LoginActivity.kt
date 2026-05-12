@@ -19,6 +19,12 @@ class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
+        // 자동 로그인 체크
+        if (TokenManager.isLoggedIn(this)) {
+            goToMain()
+            return
+        }
+
         // 카카오맵 로그인 SDK 초기화
         KakaoMapSdk.init(this, BuildConfig.KAKAO_NATIVE_KEY)
         KakaoSdk.init(this, BuildConfig.KAKAO_NATIVE_KEY)

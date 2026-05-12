@@ -68,13 +68,29 @@ class MainActivity : AppCompatActivity() {
                 .show()
         }
 
+        // 설정 버튼 (로그아웃)
+        findViewById<android.widget.ImageButton>(R.id.btnSettings).setOnClickListener {
+            android.app.AlertDialog.Builder(this)
+                .setTitle("설정")
+                .setItems(arrayOf("로그아웃")) { _, which ->
+                    when (which) {
+                        0 -> {
+                            TokenManager.clear(this)
+                            val intent = Intent(this, LoginActivity::class.java)
+                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                            startActivity(intent)
+                        }
+                    }
+                }
+                .show()
+        }
+
         // 그룹 목록 불러오기
         loadMyGroups()
     }
 
     override fun onResume() {
         super.onResume()
-        // 방 만들고 돌아왔을 때 목록 새로고침
         loadMyGroups()
     }
 
@@ -112,7 +128,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showTempData() {
-        // 서버 연동 전 임시 데이터
         roomList.clear()
         roomList.addAll(mutableListOf(
             Room(1, "제주도 여행", "한국", "제주", 4),
