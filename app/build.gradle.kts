@@ -1,9 +1,11 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
 }
 
 android {
-    namespace = "com.example.testappjsh"
+    namespace = "com.example.synctrip"
     compileSdk {
         version = release(36) {
             minorApiLevel = 1
@@ -11,7 +13,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.testappjsh"
+        applicationId = "com.example.synctrip"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
@@ -21,6 +23,20 @@ android {
         ndk {
             abiFilters += listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
         }
+
+        val localProperties = Properties()
+        val localPropertiesFile = rootProject.file("local.properties")
+        if (localPropertiesFile.exists()) {
+            localPropertiesFile.inputStream().use { localProperties.load(it) }
+        }
+        buildConfigField("String", "KAKAO_NATIVE_KEY", "\"${localProperties["KAKAO_NATIVE_KEY"]}\"")
+        buildConfigField("String", "KAKAO_REST_KEY", "\"${localProperties["KAKAO_REST_KEY"]}\"")
+        manifestPlaceholders["KAKAO_NATIVE_KEY"] = localProperties["KAKAO_NATIVE_KEY"] ?: ""
+        manifestPlaceholders["KAKAO_SCHEME"] = "kakao${localProperties["KAKAO_NATIVE_KEY"]}"
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 
     buildTypes {

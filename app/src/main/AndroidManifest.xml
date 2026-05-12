@@ -14,16 +14,15 @@
         android:theme="@style/Theme.TestAppJSH">
         <meta-data
             android:name="com.kakao.sdk.AppKey"
-            android:value="5215e216aaf94a9f15cb57f5256a1765" />
+            android:value="${KAKAO_NATIVE_KEY}" />
         <meta-data
             android:name="com.kakao.vectormap.APP_KEY"
-            android:value="5215e216aaf94a9f15cb57f5256a1765" />
+            android:value="${KAKAO_NATIVE_KEY}" />
         <activity
             android:name=".LoginActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -36,7 +35,7 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data
                     android:host="oauth"
-                    android:scheme="kakao5215e216aaf94a9f15cb57f5256a1765" />
+                    android:scheme="${KAKAO_SCHEME}" />
             </intent-filter>
         </activity>
         <activity
@@ -53,5 +52,4 @@
             android:exported="false">
         </activity>
     </application>
-
 </manifest>
