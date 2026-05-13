@@ -8,6 +8,7 @@ import com.example.synctrip.fragment.MoneyFragment
 import com.example.synctrip.fragment.PhotoFragment
 import com.example.synctrip.fragment.ScheduleFragment
 import com.example.synctrip.fragment.VoteFragment
+import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class SubActivity : AppCompatActivity() {
@@ -15,10 +16,10 @@ class SubActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_sub)
 
-        // 방 이름 표시
         val roomName = intent.getStringExtra("ROOM_NAME")
-        val tvRoomName = findViewById<android.widget.TextView>(R.id.textView)
-        tvRoomName.text = roomName
+        val toolbar = findViewById<MaterialToolbar>(R.id.toolbar)
+        toolbar.title = roomName
+        toolbar.setNavigationOnClickListener { finish() }
 
         // 처음 시작할 때 홈 탭 보여주기
         loadFragment(HomeFragment())

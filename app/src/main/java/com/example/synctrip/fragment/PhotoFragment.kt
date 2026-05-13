@@ -7,7 +7,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
@@ -49,7 +49,7 @@ class PhotoFragment : Fragment() {
         rvPhotoList.adapter = photoAdapter
 
         // 사진 추가 버튼
-        val btnAddPhoto = view.findViewById<Button>(R.id.btnAddPhoto)
+        val btnAddPhoto = view.findViewById<FloatingActionButton>(R.id.btnAddPhoto)
         btnAddPhoto.setOnClickListener {
             val intent = Intent(Intent.ACTION_PICK)
             intent.type = "image/*"

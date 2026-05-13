@@ -19,15 +19,15 @@ class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
+        // 카카오 SDK 초기화 (자동 로그인 분기 전에 항상 먼저 실행)
+        KakaoMapSdk.init(this, BuildConfig.KAKAO_NATIVE_KEY)
+        KakaoSdk.init(this, BuildConfig.KAKAO_NATIVE_KEY)
+
         // 자동 로그인 체크
         if (TokenManager.isLoggedIn(this)) {
             goToMain()
             return
         }
-
-        // 카카오맵 로그인 SDK 초기화
-        KakaoMapSdk.init(this, BuildConfig.KAKAO_NATIVE_KEY)
-        KakaoSdk.init(this, BuildConfig.KAKAO_NATIVE_KEY)
 
         val btnKakaoLogin = findViewById<Button>(R.id.btnKakaoLogin)
         btnKakaoLogin.setOnClickListener {

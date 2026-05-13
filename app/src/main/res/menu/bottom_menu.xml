@@ -13,12 +13,12 @@
 
     <item
         android:id="@+id/tab_vote"
-        android:icon="@android:drawable/ic_menu_agenda"
+        android:icon="@android:drawable/ic_menu_sort_by_size"
         android:title="투표" />
 
     <item
         android:id="@+id/tab_money"
-        android:icon="@android:drawable/ic_menu_edit"
+        android:icon="@android:drawable/ic_menu_manage"
         android:title="정산" />
 
     <item
