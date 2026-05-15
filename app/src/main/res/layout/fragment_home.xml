@@ -73,7 +73,7 @@
 
         </LinearLayout>
 
-        <!-- 초대 코드 카드 -->
+        <!-- 초대 카드 -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -88,40 +88,60 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
+                android:orientation="vertical"
                 android:paddingHorizontal="20dp"
                 android:paddingVertical="14dp">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="초대 코드"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="13sp" />
-
-                <TextView
-                    android:id="@+id/tvInviteCode"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:gravity="center"
-                    android:letterSpacing="0.15"
-                    android:text="ABC123"
-                    android:textColor="@color/primary"
-                    android:textSize="20sp"
-                    android:textStyle="bold" />
-
+                <!-- 초대하기 버튼 -->
                 <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnCopyCode"
-                    style="@style/Widget.Material3.Button.OutlinedButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="36dp"
-                    android:paddingHorizontal="16dp"
-                    android:text="복사"
-                    android:textSize="13sp"
-                    app:strokeColor="@color/primary"
-                    app:strokeWidth="1dp" />
+                    android:id="@+id/btnInvite"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:text="초대하기"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    app:cornerRadius="12dp" />
+
+                <!-- 초대 코드 영역 (버튼 누른 후 표시) -->
+                <LinearLayout
+                    android:id="@+id/layoutInviteCode"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="초대 코드"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:id="@+id/tvInviteCode"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:letterSpacing="0.15"
+                        android:textColor="@color/primary"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnCopyCode"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="36dp"
+                        android:paddingHorizontal="16dp"
+                        android:text="복사"
+                        android:textSize="13sp"
+                        app:strokeColor="@color/primary"
+                        app:strokeWidth="1dp" />
+
+                </LinearLayout>
 
             </LinearLayout>
 

@@ -10,7 +10,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.synctrip.adapter.RoomAdapter
-import com.example.synctrip.dto.GroupListResponse
+import com.example.synctrip.dto.group.BandSummary
 import com.example.synctrip.dto.Room
 import retrofit2.Call
 import retrofit2.Callback
@@ -38,16 +38,17 @@ class MainActivity : AppCompatActivity() {
         rvRoomList.adapter = RoomAdapter(roomList) { room ->
             val intent = Intent(this, SubActivity::class.java)
             intent.putExtra("ROOM_NAME", room.roomName)
-            intent.putExtra("GROUP_ID", room.groupId)
+            intent.putExtra("BAND_ID", room.bandId)
+            intent.putExtra("INVITE_CODE", room.inviteCode)
+            intent.putExtra("START_DATE", room.startDate)
+            intent.putExtra("END_DATE", room.endDate)
             startActivity(intent)
         }
 
-        // 방 만들기 버튼
         findViewById<android.widget.Button>(R.id.btnNext).setOnClickListener {
             startActivity(Intent(this, CreateRoomActivity::class.java))
         }
 
-        // 초대 코드로 참여 버튼
         findViewById<android.widget.Button>(R.id.btnJoinRoom).setOnClickListener {
             val input = android.widget.EditText(this)
             input.hint = "초대 코드 6자리 입력"
@@ -68,7 +69,6 @@ class MainActivity : AppCompatActivity() {
                 .show()
         }
 
-        // 설정 버튼 (로그아웃)
         findViewById<android.widget.ImageButton>(R.id.btnSettings).setOnClickListener {
             android.app.AlertDialog.Builder(this)
                 .setTitle("설정")
@@ -85,43 +85,45 @@ class MainActivity : AppCompatActivity() {
                 .show()
         }
 
-        // 그룹 목록 불러오기
-        loadMyGroups()
+        loadMyBands()
     }
 
     override fun onResume() {
         super.onResume()
-        loadMyGroups()
+        loadMyBands()
     }
 
-    private fun loadMyGroups() {
-        RetrofitClient.api.getMyGroups()
-            .enqueue(object : Callback<GroupListResponse> {
-                override fun onResponse(call: Call<GroupListResponse>, response: Response<GroupListResponse>) {
+    private fun loadMyBands() {
+        RetrofitClient.api.getMyBands()
+            .enqueue(object : Callback<List<BandSummary>> {
+                override fun onResponse(call: Call<List<BandSummary>>, response: Response<List<BandSummary>>) {
                     if (response.isSuccessful) {
-                        val groups = response.body()?.groups ?: emptyList()
+                        val bands = response.body() ?: emptyList()
                         roomList.clear()
-                        groups.forEach {
+                        bands.forEach {
                             roomList.add(Room(
-                                groupId = it.groupId,
-                                roomName = it.title,
+                                bandId = it.id,
+                                roomName = it.name,
                                 country = "",
                                 city = it.destination,
-                                memberCount = it.memberCount,
-                                status = it.status
+                                memberCount = 0,
+                                status = "PLANNING",
+                                inviteCode = it.inviteCode,
+                                startDate = it.startDate,
+                                endDate = it.endDate
                             ))
                         }
                         rvRoomList.adapter?.notifyDataSetChanged()
                         updateEmptyView()
-                        android.util.Log.d("GroupList", "그룹 목록 로드 성공! ${groups.size}개")
+                        android.util.Log.d("BandList", "밴드 목록 로드 성공! ${bands.size}개")
                     } else {
-                        android.util.Log.e("GroupList", "그룹 목록 로드 실패: ${response.code()}")
+                        android.util.Log.e("BandList", "밴드 목록 로드 실패: ${response.code()}")
                         showTempData()
                     }
                 }
 
-                override fun onFailure(call: Call<GroupListResponse>, t: Throwable) {
-                    android.util.Log.e("GroupList", "서버 연결 실패: ${t.message}")
+                override fun onFailure(call: Call<List<BandSummary>>, t: Throwable) {
+                    android.util.Log.e("BandList", "서버 연결 실패: ${t.message}")
                     showTempData()
                 }
             })

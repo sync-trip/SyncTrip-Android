@@ -6,16 +6,36 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.synctrip.PlaceSearchActivity
 import com.example.synctrip.R
+import com.example.synctrip.RetrofitClient
 import com.example.synctrip.adapter.PlaceAdapter
 import com.example.synctrip.dto.Place
+import com.example.synctrip.dto.group.BandInviteCodeResponse
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class HomeFragment : Fragment() {
+
+    companion object {
+        fun newInstance(bandId: Long, roomName: String, inviteCode: String, startDate: String, endDate: String): HomeFragment {
+            return HomeFragment().apply {
+                arguments = Bundle().apply {
+                    putLong("BAND_ID", bandId)
+                    putString("ROOM_NAME", roomName)
+                    putString("INVITE_CODE", inviteCode)
+                    putString("START_DATE", startDate)
+                    putString("END_DATE", endDate)
+                }
+            }
+        }
+    }
 
     enum class GroupStatus {
         PLANNING, VOTING, GENERATING, TRAVELLING, DONE
@@ -31,12 +51,22 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val myPlaces = mutableListOf(
-            Place("경복궁", "문화"),
-            Place("남산타워", "관광"),
-            Place("명동", "쇼핑")
-        )
+        val bandId = arguments?.getLong("BAND_ID") ?: -1L
+        val roomName = arguments?.getString("ROOM_NAME") ?: ""
+        val inviteCode = arguments?.getString("INVITE_CODE") ?: ""
+        val startDate = arguments?.getString("START_DATE") ?: ""
+        val endDate = arguments?.getString("END_DATE") ?: ""
 
+        view.findViewById<TextView>(R.id.tvTripTitle).text = roomName.ifEmpty { "여행" }
+        if (startDate.isNotEmpty() && endDate.isNotEmpty()) {
+            view.findViewById<TextView>(R.id.tvTripDate).text = "$startDate ~ $endDate"
+        }
+        view.findViewById<TextView>(R.id.tvMemberCount).text = "멤버 1명"
+
+        val tvInviteCode = view.findViewById<TextView>(R.id.tvInviteCode)
+        val layoutInviteCode = view.findViewById<LinearLayout>(R.id.layoutInviteCode)
+
+        val myPlaces = mutableListOf<Place>()
         val currentStatus = GroupStatus.PLANNING
 
         val tvMyPlaceTitle = view.findViewById<TextView>(R.id.tvMyPlaceTitle)
@@ -45,6 +75,26 @@ class HomeFragment : Fragment() {
         val rvMyPlaces = view.findViewById<RecyclerView>(R.id.rvMyPlaces)
         rvMyPlaces.layoutManager = LinearLayoutManager(requireContext())
         rvMyPlaces.adapter = PlaceAdapter(myPlaces)
+
+        // 초대하기 버튼 - 누르면 서버에서 코드 받아와서 표시
+        val btnInvite = view.findViewById<Button>(R.id.btnInvite)
+        btnInvite.setOnClickListener {
+            if (bandId == -1L) return@setOnClickListener
+            btnInvite.isEnabled = false
+            RetrofitClient.api.getInviteCode(bandId)
+                .enqueue(object : Callback<BandInviteCodeResponse> {
+                    override fun onResponse(call: Call<BandInviteCodeResponse>, response: Response<BandInviteCodeResponse>) {
+                        btnInvite.isEnabled = true
+                        val code = response.body()?.inviteCode ?: return
+                        tvInviteCode.text = code
+                        layoutInviteCode.visibility = View.VISIBLE
+                    }
+                    override fun onFailure(call: Call<BandInviteCodeResponse>, t: Throwable) {
+                        btnInvite.isEnabled = true
+                        android.widget.Toast.makeText(requireContext(), "코드를 불러오지 못했어요", android.widget.Toast.LENGTH_SHORT).show()
+                    }
+                })
+        }
 
         // 장소 담기 버튼
         val btnAddPlace = view.findViewById<Button>(R.id.btnAddPlace)
@@ -63,18 +113,14 @@ class HomeFragment : Fragment() {
             ).show()
         }
 
-        // 초대 코드 복사 버튼
-        val tvInviteCode = view.findViewById<TextView>(R.id.tvInviteCode)
+        // 복사 버튼 - 이미 표시된 코드를 클립보드에 복사
         val btnCopyCode = view.findViewById<Button>(R.id.btnCopyCode)
         btnCopyCode.setOnClickListener {
+            val code = tvInviteCode.text.toString()
+            if (code.isEmpty()) return@setOnClickListener
             val clipboard = requireContext().getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-            val clip = android.content.ClipData.newPlainText("초대 코드", tvInviteCode.text)
-            clipboard.setPrimaryClip(clip)
-            android.widget.Toast.makeText(
-                requireContext(),
-                "초대 코드가 복사됐어요! 📋",
-                android.widget.Toast.LENGTH_SHORT
-            ).show()
+            clipboard.setPrimaryClip(android.content.ClipData.newPlainText("초대 코드", code))
+            android.widget.Toast.makeText(requireContext(), "초대 코드가 복사됐어요!", android.widget.Toast.LENGTH_SHORT).show()
         }
 
         val tvGroupStatus = view.findViewById<TextView>(R.id.tvGroupStatus)

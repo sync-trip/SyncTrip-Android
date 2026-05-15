@@ -16,18 +16,23 @@ class SubActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_sub)
 
-        val roomName = intent.getStringExtra("ROOM_NAME")
+        val roomName = intent.getStringExtra("ROOM_NAME") ?: ""
+        val bandId = intent.getLongExtra("BAND_ID", -1L)
+        val inviteCode = intent.getStringExtra("INVITE_CODE") ?: ""
+        val startDate = intent.getStringExtra("START_DATE") ?: ""
+        val endDate = intent.getStringExtra("END_DATE") ?: ""
+
         val toolbar = findViewById<MaterialToolbar>(R.id.toolbar)
         toolbar.title = roomName
         toolbar.setNavigationOnClickListener { finish() }
 
         // 처음 시작할 때 홈 탭 보여주기
-        loadFragment(HomeFragment())
+        loadFragment(HomeFragment.newInstance(bandId, roomName, inviteCode, startDate, endDate))
 
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottom_navigation)
         bottomNav.setOnItemSelectedListener { item ->
             when (item.itemId) {
-                R.id.tab_home     -> loadFragment(HomeFragment())
+                R.id.tab_home     -> loadFragment(HomeFragment.newInstance(bandId, roomName, inviteCode, startDate, endDate))
                 R.id.tab_schedule -> loadFragment(ScheduleFragment())
                 R.id.tab_vote     -> loadFragment(VoteFragment())
                 R.id.tab_money    -> loadFragment(MoneyFragment())

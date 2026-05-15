@@ -1,19 +1,40 @@
 package com.example.synctrip
 
+import android.content.Context
+import okhttp3.OkHttpClient
+import okhttp3.Interceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitClient {
 
-    // 테스트 서버 주소
     private const val BASE_URL = "https://test.sync-trip.app/"
+    private var retrofit: Retrofit? = null
 
-    // Retrofit 인스턴스 생성
-    private val retrofit: Retrofit = Retrofit.Builder()
-        .baseUrl(BASE_URL)
-        .addConverterFactory(GsonConverterFactory.create())
-        .build()
+    fun init(context: Context) {
+        val interceptor = Interceptor { chain ->
+            val token = TokenManager.getToken(context)
+            val request = if (token != null) {
+                chain.request().newBuilder()
+                    .addHeader("Authorization", "Bearer $token")
+                    .build()
+            } else {
+                chain.request()
+            }
+            chain.proceed(request)
+        }
 
-    // API 서비스 인스턴스
-    val api: ApiService = retrofit.create(ApiService::class.java)
+        val client = OkHttpClient.Builder()
+            .addInterceptor(interceptor)
+            .build()
+
+        retrofit = Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .client(client)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
+
+    val api: ApiService
+        get() = retrofit!!.create(ApiService::class.java)
 }

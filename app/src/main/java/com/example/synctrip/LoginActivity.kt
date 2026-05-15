@@ -22,7 +22,7 @@ class LoginActivity : AppCompatActivity() {
         // 카카오 SDK 초기화 (자동 로그인 분기 전에 항상 먼저 실행)
         KakaoMapSdk.init(this, BuildConfig.KAKAO_NATIVE_KEY)
         KakaoSdk.init(this, BuildConfig.KAKAO_NATIVE_KEY)
-
+        RetrofitClient.init(this)  // ← 여기 추가
         // 자동 로그인 체크
         if (TokenManager.isLoggedIn(this)) {
             goToMain()

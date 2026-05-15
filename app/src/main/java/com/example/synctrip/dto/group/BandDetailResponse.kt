@@ -1,14 +1,15 @@
-package com.example.synctrip.dto
+package com.example.synctrip.dto.group
 
-data class GroupDetailResponse(
-    val groupId: Long,
-    val title: String,
+data class BandDetailResponse(
+    val bandId: Long,
+    val name: String,
     val destination: String,
     val startDate: String,
     val endDate: String,
     val memberCount: Int,
     val maxMembers: Int,
     val inviteCode: String,
-    val travelStyle: String,
+    val countryCode: String,
+    val overseas: Boolean,
     val status: String
 )
