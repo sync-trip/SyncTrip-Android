@@ -1,164 +1,61 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
+<androidx.core.widget.NestedScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background"
-    android:padding="16dp">
+    android:background="@color/background">
 
-    <!-- 진행 상태 헤더 -->
     <LinearLayout
-        android:id="@+id/layoutVoteHeader"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        android:orientation="vertical"
+        android:paddingHorizontal="20dp"
+        android:paddingTop="28dp"
+        android:paddingBottom="40dp">
 
+        <!-- Timer chip -->
         <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="장소 투표"
-            android:textColor="@color/text_primary"
-            android:textSize="18sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/tvVoteCount"
+            android:id="@+id/tvVoteTimer"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/bg_chip"
-            android:paddingHorizontal="12dp"
-            android:paddingVertical="5dp"
-            android:text="남은 장소 5개"
-            android:textColor="@color/primary"
-            android:textSize="13sp" />
+            android:layout_gravity="center_horizontal"
+            android:background="@drawable/bg_timer_chip"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="8dp"
+            android:text="투표 종료까지 02:45"
+            android:textColor="@color/on_primary_container"
+            android:textSize="13sp"
+            android:textStyle="bold" />
 
-    </LinearLayout>
+        <!-- Title -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="숙소 블라인드 투표"
+            android:textColor="@color/text_primary"
+            android:textSize="28sp"
+            android:textStyle="bold" />
 
-    <!-- 장소 카드 -->
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/cardVote"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="16dp"
-        app:cardCornerRadius="20dp"
-        app:cardElevation="6dp"
-        app:layout_constraintBottom_toTopOf="@id/layoutVoteActions"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/layoutVoteHeader"
-        app:strokeWidth="0dp">
-
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <!-- Subtitle -->
+        <TextView
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="선입견 없이 가장 마음에 드는 조건을 선택해주세요."
+            android:textColor="@color/text_secondary"
+            android:textSize="14sp"
+            android:lineSpacingMultiplier="1.4" />
 
-            <ImageView
-                android:id="@+id/ivPlaceImage"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:scaleType="centerCrop"
-                android:src="@android:drawable/ic_menu_gallery" />
-
-            <!-- 하단 그라데이션 오버레이 -->
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="220dp"
-                android:background="@android:drawable/screen_background_dark_transparent"
-                android:alpha="0.85"
-                app:layout_constraintBottom_toBottomOf="parent" />
-
-            <!-- 카테고리 칩 -->
-            <TextView
-                android:id="@+id/tvVoteCategory"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="20dp"
-                android:background="#CC000000"
-                android:paddingHorizontal="12dp"
-                android:paddingVertical="5dp"
-                android:text="문화"
-                android:textColor="#FFFFFF"
-                android:textSize="12sp"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <!-- 장소 정보 -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="20dp"
-                app:layout_constraintBottom_toBottomOf="parent">
-
-                <TextView
-                    android:id="@+id/tvVotePlaceName"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="경복궁"
-                    android:textColor="#FFFFFF"
-                    android:textSize="30sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/tvVoteRating"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    android:text="⭐  4.5 · 리뷰 1,203개"
-                    android:textColor="#DDDDDD"
-                    android:textSize="14sp" />
-
-            </LinearLayout>
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-    </com.google.android.material.card.MaterialCardView>
-
-    <!-- 액션 버튼 -->
-    <LinearLayout
-        android:id="@+id/layoutVoteActions"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:orientation="horizontal"
-        android:paddingBottom="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnDislike"
-            style="@style/Widget.Material3.Button.OutlinedButton"
-            android:layout_width="0dp"
-            android:layout_height="56dp"
-            android:layout_marginEnd="10dp"
-            android:layout_weight="1"
-            android:text="✕  패스"
-            android:textSize="15sp"
-            android:textStyle="bold"
-            app:cornerRadius="16dp"
-            app:strokeColor="@color/danger"
-            app:strokeWidth="1.5dp"
-            android:textColor="@color/danger" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnLike"
-            android:layout_width="0dp"
-            android:layout_height="56dp"
-            android:layout_marginStart="10dp"
-            android:layout_weight="1"
-            android:text="♥  좋아요"
-            android:textSize="15sp"
-            android:textStyle="bold"
-            app:cornerRadius="16dp" />
+        <!-- Vote option list -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvVoteOptions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:nestedScrollingEnabled="false"
+            android:clipToPadding="false" />
 
     </LinearLayout>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.core.widget.NestedScrollView>

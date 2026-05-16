@@ -7,7 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.synctrip.adapter.RoomAdapter
 import com.example.synctrip.dto.group.BandSummary
@@ -34,7 +34,7 @@ class MainActivity : AppCompatActivity() {
 
         tvEmpty = findViewById(R.id.tvEmpty)
         rvRoomList = findViewById(R.id.rvRoomList)
-        rvRoomList.layoutManager = GridLayoutManager(this, 2)
+        rvRoomList.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         rvRoomList.adapter = RoomAdapter(roomList) { room ->
             val intent = Intent(this, SubActivity::class.java)
             intent.putExtra("ROOM_NAME", room.roomName)
@@ -45,25 +45,44 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        findViewById<android.widget.Button>(R.id.btnNext).setOnClickListener {
+        findViewById<View>(R.id.btnNext).setOnClickListener {
             startActivity(Intent(this, CreateRoomActivity::class.java))
         }
 
-        findViewById<android.widget.Button>(R.id.btnJoinRoom).setOnClickListener {
+        findViewById<View>(R.id.btnJoinRoom).setOnClickListener {
             val input = android.widget.EditText(this)
-            input.hint = "초대 코드 6자리 입력"
+            input.hint = "초대 코드 입력"
             input.inputType = android.text.InputType.TYPE_CLASS_TEXT
 
             android.app.AlertDialog.Builder(this)
                 .setTitle("초대 코드로 참여")
                 .setView(input)
                 .setPositiveButton("참여하기") { _, _ ->
-                    val code = input.text.toString()
-                    if (code.length == 6) {
-                        android.widget.Toast.makeText(this, "코드 [$code] 확인 중...", android.widget.Toast.LENGTH_SHORT).show()
-                    } else {
-                        android.widget.Toast.makeText(this, "6자리 코드를 입력해주세요!", android.widget.Toast.LENGTH_SHORT).show()
+                    val code = input.text.toString().trim()
+                    if (code.isEmpty()) {
+                        android.widget.Toast.makeText(this, "초대 코드를 입력해주세요!", android.widget.Toast.LENGTH_SHORT).show()
+                        return@setPositiveButton
                     }
+                    RetrofitClient.api.joinBand(com.example.synctrip.dto.group.BandJoinRequest(code))
+                        .enqueue(object : retrofit2.Callback<com.example.synctrip.dto.group.BandSummary> {
+                            override fun onResponse(call: retrofit2.Call<com.example.synctrip.dto.group.BandSummary>, response: retrofit2.Response<com.example.synctrip.dto.group.BandSummary>) {
+                                if (response.isSuccessful) {
+                                    android.widget.Toast.makeText(this@MainActivity, "여행 방에 참여했어요!", android.widget.Toast.LENGTH_SHORT).show()
+                                    loadMyBands()
+                                } else {
+                                    when (response.code()) {
+                                        401, 403 -> redirectToLogin()
+                                        404 -> android.widget.Toast.makeText(this@MainActivity, "유효하지 않은 초대 코드예요", android.widget.Toast.LENGTH_SHORT).show()
+                                        409 -> android.widget.Toast.makeText(this@MainActivity, "이미 참여 중인 방이에요", android.widget.Toast.LENGTH_SHORT).show()
+                                        410 -> android.widget.Toast.makeText(this@MainActivity, "만료된 초대 코드예요. 방장한테 다시 받아보세요", android.widget.Toast.LENGTH_SHORT).show()
+                                        else -> android.widget.Toast.makeText(this@MainActivity, "참여 실패 (${response.code()})", android.widget.Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+                            }
+                            override fun onFailure(call: retrofit2.Call<com.example.synctrip.dto.group.BandSummary>, t: Throwable) {
+                                android.widget.Toast.makeText(this@MainActivity, "서버 연결 실패", android.widget.Toast.LENGTH_SHORT).show()
+                            }
+                        })
                 }
                 .setNegativeButton("취소", null)
                 .show()
@@ -85,7 +104,6 @@ class MainActivity : AppCompatActivity() {
                 .show()
         }
 
-        loadMyBands()
     }
 
     override fun onResume() {
@@ -118,7 +136,11 @@ class MainActivity : AppCompatActivity() {
                         android.util.Log.d("BandList", "밴드 목록 로드 성공! ${bands.size}개")
                     } else {
                         android.util.Log.e("BandList", "밴드 목록 로드 실패: ${response.code()}")
-                        updateEmptyView()
+                        if (response.code() == 401 || response.code() == 403) {
+                            redirectToLogin()
+                        } else {
+                            updateEmptyView()
+                        }
                     }
                 }
 
@@ -127,6 +149,13 @@ class MainActivity : AppCompatActivity() {
                     updateEmptyView()
                 }
             })
+    }
+
+    private fun redirectToLogin() {
+        TokenManager.clear(this)
+        val intent = Intent(this, LoginActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
     }
 
     private fun updateEmptyView() {

@@ -9,8 +9,12 @@ import com.example.synctrip.dto.group.BandMemberResponse
 import com.example.synctrip.dto.group.BandSummary
 import com.example.synctrip.dto.group.CreateBandRequest
 import com.example.synctrip.dto.group.CreateBandResponse
+import com.example.synctrip.dto.group.PlacePickListResponse
+import com.example.synctrip.dto.group.PlacePickRequest
+import com.example.synctrip.dto.group.PlacePickResponse
 import retrofit2.Call
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
@@ -33,11 +37,20 @@ interface ApiService {
     fun createBand(@Body request: CreateBandRequest): Call<CreateBandResponse>
 
     @POST("api/bands/join")
-    fun joinBand(@Body request: BandJoinRequest): Call<Void>
+    fun joinBand(@Body request: BandJoinRequest): Call<BandSummary>
 
     @POST("api/bands/{bandId}/invite-code")
     fun getInviteCode(@Path("bandId") bandId: Long): Call<BandInviteCodeResponse>
 
     @GET("api/bands/{bandId}/members")
     fun getBandMembers(@Path("bandId") bandId: Long): Call<List<BandMemberResponse>>
+
+    @GET("api/bands/{bandId}/picks")
+    fun getPicks(@Path("bandId") bandId: Long): Call<PlacePickListResponse>
+
+    @POST("api/bands/{bandId}/picks")
+    fun addPick(@Path("bandId") bandId: Long, @Body request: PlacePickRequest): Call<PlacePickResponse>
+
+    @DELETE("api/bands/{bandId}/picks/{placeId}")
+    fun deletePick(@Path("bandId") bandId: Long, @Path("placeId") placeId: Long): Call<Void>
 }

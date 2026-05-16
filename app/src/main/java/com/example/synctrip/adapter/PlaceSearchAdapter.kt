@@ -7,31 +7,37 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.synctrip.R
 import com.example.synctrip.dto.kakao.PlaceDocument
+import com.google.android.material.button.MaterialButton
 
 class PlaceSearchAdapter(
     private val places: List<PlaceDocument>,
-    private val onItemClick: (PlaceDocument) -> Unit
-) : RecyclerView.Adapter<PlaceSearchAdapter.ViewHolder>() {
+    private val onPickClick: (PlaceDocument) -> Unit
+) : RecyclerView.Adapter<PlaceSearchAdapter.VH>() {
 
-    class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val tvName: TextView = itemView.findViewById(R.id.tvSearchPlaceName)
-        val tvAddress: TextView = itemView.findViewById(R.id.tvSearchPlaceAddress)
-        val tvCategory: TextView = itemView.findViewById(R.id.tvSearchPlaceCategory)
+    inner class VH(view: View) : RecyclerView.ViewHolder(view) {
+        val tvName: TextView = view.findViewById(R.id.tvPlaceName)
+        val tvAddress: TextView = view.findViewById(R.id.tvPlaceAddress)
+        val tvCategory: TextView = view.findViewById(R.id.tvPlaceCategory)
+        val btnAdd: MaterialButton = view.findViewById(R.id.btnAddPlace)
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_place_search, parent, false)
-        return ViewHolder(view)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
+        val v = LayoutInflater.from(parent.context).inflate(R.layout.item_place_card, parent, false)
+        return VH(v)
     }
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: VH, position: Int) {
         val place = places[position]
         holder.tvName.text = place.place_name
         holder.tvAddress.text = place.road_address_name.ifEmpty { place.address_name }
-        holder.tvCategory.text = place.category_name
-        holder.itemView.setOnClickListener { onItemClick(place) }
+        holder.tvCategory.text = shortenCategory(place.category_name)
+        holder.btnAdd.setOnClickListener { onPickClick(place) }
     }
 
-    override fun getItemCount(): Int = places.size
+    override fun getItemCount() = places.size
+
+    private fun shortenCategory(full: String): String {
+        val parts = full.split(" > ")
+        return if (parts.size >= 2) parts.last() else full
+    }
 }

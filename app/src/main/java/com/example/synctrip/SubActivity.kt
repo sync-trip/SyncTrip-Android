@@ -42,6 +42,11 @@ class SubActivity : AppCompatActivity() {
         }
     }
 
+    fun switchToVoteTab() {
+        val bottomNav = findViewById<BottomNavigationView>(R.id.bottom_navigation)
+        bottomNav.selectedItemId = R.id.tab_vote
+    }
+
     private fun loadFragment(fragment: Fragment) {
         supportFragmentManager.beginTransaction()
             .replace(R.id.fragment_container, fragment)
