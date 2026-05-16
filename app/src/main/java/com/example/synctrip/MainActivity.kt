@@ -118,26 +118,15 @@ class MainActivity : AppCompatActivity() {
                         android.util.Log.d("BandList", "밴드 목록 로드 성공! ${bands.size}개")
                     } else {
                         android.util.Log.e("BandList", "밴드 목록 로드 실패: ${response.code()}")
-                        showTempData()
+                        updateEmptyView()
                     }
                 }
 
                 override fun onFailure(call: Call<List<BandSummary>>, t: Throwable) {
                     android.util.Log.e("BandList", "서버 연결 실패: ${t.message}")
-                    showTempData()
+                    updateEmptyView()
                 }
             })
-    }
-
-    private fun showTempData() {
-        roomList.clear()
-        roomList.addAll(mutableListOf(
-            Room(1, "제주도 여행", "한국", "제주", 4),
-            Room(2, "도쿄 여행", "일본", "도쿄", 3),
-            Room(3, "뉴욕 여행", "미국", "뉴욕", 5)
-        ))
-        rvRoomList.adapter?.notifyDataSetChanged()
-        updateEmptyView()
     }
 
     private fun updateEmptyView() {
