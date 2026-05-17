@@ -110,7 +110,8 @@ class PlaceSearchActivity : AppCompatActivity() {
     private fun addPick(place: PlaceDocument) {
         if (bandId == -1L) return
         val request = PlacePickRequest(
-            externalId = "${place.place_name}_${place.x}_${place.y}",
+            apiSource = "KAKAO",
+            externalId = place.id,
             name = place.place_name,
             category = kakaoToCategory(place.category_name),
             latitude = place.y.toDouble(),
@@ -126,6 +127,7 @@ class PlaceSearchActivity : AppCompatActivity() {
                             currentPickCount++
                             updateCartBadge()
                         }
+                        response.code() == 403 -> android.widget.Toast.makeText(this@PlaceSearchActivity, "투표가 시작돼서 장소를 더 담을 수 없어요", android.widget.Toast.LENGTH_SHORT).show()
                         response.code() == 409 -> android.widget.Toast.makeText(this@PlaceSearchActivity, "이미 담은 장소예요", android.widget.Toast.LENGTH_SHORT).show()
                         response.code() == 400 -> android.widget.Toast.makeText(this@PlaceSearchActivity, "장소는 최대 ${maxPickCount}개까지 담을 수 있어요", android.widget.Toast.LENGTH_SHORT).show()
                         else -> android.widget.Toast.makeText(this@PlaceSearchActivity, "담기 실패 (${response.code()})", android.widget.Toast.LENGTH_SHORT).show()

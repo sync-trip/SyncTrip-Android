@@ -1,6 +1,8 @@
 package com.example.synctrip
 
 import com.example.synctrip.dto.TestResponse
+import com.example.synctrip.dto.band.BandReadyResponse
+import com.example.synctrip.dto.band.BandStatusTransitionResponse
 import com.example.synctrip.dto.kakao.KakaoLoginRequest
 import com.example.synctrip.dto.kakao.KakaoLoginResponse
 import com.example.synctrip.dto.group.BandInviteCodeResponse
@@ -12,6 +14,13 @@ import com.example.synctrip.dto.group.CreateBandResponse
 import com.example.synctrip.dto.group.PlacePickListResponse
 import com.example.synctrip.dto.group.PlacePickRequest
 import com.example.synctrip.dto.group.PlacePickResponse
+import com.example.synctrip.dto.schedule.ScheduleAltResponse
+import com.example.synctrip.dto.schedule.ScheduleResponse
+import com.example.synctrip.dto.vote.GroupVoteStatusResponse
+import com.example.synctrip.dto.vote.VotePlaceResponse
+import com.example.synctrip.dto.vote.VoteRequest
+import com.example.synctrip.dto.vote.VoteResponse
+import com.example.synctrip.dto.vote.VoteStatusResponse
 import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -27,8 +36,12 @@ interface ApiService {
     @GET("hello")
     fun getHello(): Call<TestResponse>
 
+    // ─── Auth ───────────────────────────────────────────────────────────────
+
     @POST("auth/kakao/login")
     fun kakaoLogin(@Body request: KakaoLoginRequest): Call<KakaoLoginResponse>
+
+    // ─── Band ───────────────────────────────────────────────────────────────
 
     @GET("api/bands")
     fun getMyBands(): Call<List<BandSummary>>
@@ -42,8 +55,25 @@ interface ApiService {
     @POST("api/bands/{bandId}/invite-code")
     fun getInviteCode(@Path("bandId") bandId: Long): Call<BandInviteCodeResponse>
 
+    @POST("api/bands/{bandId}/invite-code/reissue")
+    fun reissueInviteCode(@Path("bandId") bandId: Long): Call<BandInviteCodeResponse>
+
     @GET("api/bands/{bandId}/members")
     fun getBandMembers(@Path("bandId") bandId: Long): Call<List<BandMemberResponse>>
+
+    @POST("api/bands/{bandId}/ready")
+    fun setReady(@Path("bandId") bandId: Long): Call<BandReadyResponse>
+
+    @DELETE("api/bands/{bandId}/ready")
+    fun cancelReady(@Path("bandId") bandId: Long): Call<BandReadyResponse>
+
+    @POST("api/bands/{bandId}/status/advance")
+    fun advanceBandStatus(@Path("bandId") bandId: Long): Call<BandStatusTransitionResponse>
+
+    @DELETE("api/bands/{bandId}")
+    fun deleteBand(@Path("bandId") bandId: Long): Call<Void>
+
+    // ─── Picks ──────────────────────────────────────────────────────────────
 
     @GET("api/bands/{bandId}/picks")
     fun getPicks(@Path("bandId") bandId: Long): Call<PlacePickListResponse>
@@ -53,4 +83,29 @@ interface ApiService {
 
     @DELETE("api/bands/{bandId}/picks/{placeId}")
     fun deletePick(@Path("bandId") bandId: Long, @Path("placeId") placeId: Long): Call<Void>
+
+    // ─── Vote ────────────────────────────────────────────────────────────────
+
+    @GET("api/bands/{bandId}/votes/places")
+    fun getVotePlaces(@Path("bandId") bandId: Long): Call<List<VotePlaceResponse>>
+
+    @POST("api/bands/{bandId}/votes")
+    fun vote(@Path("bandId") bandId: Long, @Body request: VoteRequest): Call<VoteResponse>
+
+    @GET("api/bands/{bandId}/votes/status")
+    fun getMyVoteStatus(@Path("bandId") bandId: Long): Call<VoteStatusResponse>
+
+    @GET("api/bands/{bandId}/votes/status/group")
+    fun getGroupVoteStatus(@Path("bandId") bandId: Long): Call<GroupVoteStatusResponse>
+
+    // ─── Schedule ────────────────────────────────────────────────────────────
+
+    @POST("api/bands/{bandId}/schedule/generate")
+    fun generateSchedule(@Path("bandId") bandId: Long): Call<Void>
+
+    @GET("api/bands/{bandId}/schedule")
+    fun getSchedule(@Path("bandId") bandId: Long): Call<ScheduleResponse>
+
+    @GET("api/bands/{bandId}/schedule/alts")
+    fun getScheduleAlts(@Path("bandId") bandId: Long): Call<List<ScheduleAltResponse>>
 }

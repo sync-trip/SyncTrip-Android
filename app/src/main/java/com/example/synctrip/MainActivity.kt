@@ -3,6 +3,7 @@ package com.example.synctrip
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import android.widget.PopupMenu
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -35,15 +36,20 @@ class MainActivity : AppCompatActivity() {
         tvEmpty = findViewById(R.id.tvEmpty)
         rvRoomList = findViewById(R.id.rvRoomList)
         rvRoomList.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
-        rvRoomList.adapter = RoomAdapter(roomList) { room ->
-            val intent = Intent(this, SubActivity::class.java)
-            intent.putExtra("ROOM_NAME", room.roomName)
-            intent.putExtra("BAND_ID", room.bandId)
-            intent.putExtra("INVITE_CODE", room.inviteCode)
-            intent.putExtra("START_DATE", room.startDate)
-            intent.putExtra("END_DATE", room.endDate)
-            startActivity(intent)
-        }
+        rvRoomList.adapter = RoomAdapter(
+            roomList = roomList,
+            onItemClick = { room ->
+                val intent = Intent(this, SubActivity::class.java)
+                intent.putExtra("ROOM_NAME", room.roomName)
+                intent.putExtra("BAND_ID", room.bandId)
+                intent.putExtra("INVITE_CODE", room.inviteCode)
+                intent.putExtra("START_DATE", room.startDate)
+                intent.putExtra("END_DATE", room.endDate)
+                intent.putExtra("BAND_STATUS", room.status)
+                startActivity(intent)
+            },
+            onOptionsClick = { room, anchor -> showRoomOptions(room, anchor) }
+        )
 
         findViewById<View>(R.id.btnNext).setOnClickListener {
             startActivity(Intent(this, CreateRoomActivity::class.java))
@@ -125,10 +131,11 @@ class MainActivity : AppCompatActivity() {
                                 country = "",
                                 city = it.destination,
                                 memberCount = 0,
-                                status = "PLANNING",
+                                status = it.status ?: "PLANNING",
                                 inviteCode = it.inviteCode,
                                 startDate = it.startDate,
-                                endDate = it.endDate
+                                endDate = it.endDate,
+                                isOwner = it.isOwner
                             ))
                         }
                         rvRoomList.adapter?.notifyDataSetChanged()
@@ -156,6 +163,53 @@ class MainActivity : AppCompatActivity() {
         val intent = Intent(this, LoginActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         startActivity(intent)
+    }
+
+    private fun showRoomOptions(room: Room, anchor: View) {
+        val popup = PopupMenu(this, anchor)
+        popup.menu.add(0, 0, 0, "방 삭제")
+        popup.setOnMenuItemClickListener { item ->
+            if (item.itemId == 0) confirmDeleteRoom(room)
+            true
+        }
+        popup.show()
+    }
+
+    private fun confirmDeleteRoom(room: Room) {
+        android.app.AlertDialog.Builder(this)
+            .setTitle("방 삭제")
+            .setMessage("'${room.roomName}' 방을 삭제할까요?\n삭제된 방은 복구할 수 없어요.")
+            .setPositiveButton("삭제") { _, _ -> deleteRoom(room) }
+            .setNegativeButton("취소", null)
+            .show()
+    }
+
+    private fun deleteRoom(room: Room) {
+        RetrofitClient.api.deleteBand(room.bandId)
+            .enqueue(object : Callback<Void> {
+                override fun onResponse(call: Call<Void>, response: Response<Void>) {
+                    when {
+                        response.isSuccessful -> {
+                            val idx = roomList.indexOfFirst { it.bandId == room.bandId }
+                            if (idx != -1) {
+                                roomList.removeAt(idx)
+                                rvRoomList.adapter?.notifyItemRemoved(idx)
+                            }
+                            updateEmptyView()
+                            android.widget.Toast.makeText(this@MainActivity, "방이 삭제됐어요", android.widget.Toast.LENGTH_SHORT).show()
+                        }
+                        else -> {
+                            val errorBody = response.errorBody()?.string() ?: ""
+                            android.util.Log.e("DeleteBand", "삭제 실패 ${response.code()}: $errorBody")
+                            val msg = if (response.code() == 403) "방장만 삭제할 수 있어요" else "삭제 실패 (${response.code()})"
+                            android.widget.Toast.makeText(this@MainActivity, msg, android.widget.Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+                override fun onFailure(call: Call<Void>, t: Throwable) {
+                    android.widget.Toast.makeText(this@MainActivity, "서버 연결 실패", android.widget.Toast.LENGTH_SHORT).show()
+                }
+            })
     }
 
     private fun updateEmptyView() {

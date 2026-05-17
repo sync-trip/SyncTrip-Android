@@ -48,7 +48,7 @@ class MemberAdapter(
         holder.flAvatar.background = avatarDrawable
 
         // Border color: primary if host/ready, outline_variant if not ready
-        val isHost = member.role == "HOST"
+        val isHost = member.role == "OWNER"
         val borderColor = if (isHost || member.isReady)
             Color.parseColor("#004B6F")
         else

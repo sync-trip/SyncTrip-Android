@@ -11,7 +11,8 @@ import com.example.synctrip.dto.Room
 
 class RoomAdapter(
     private val roomList: List<Room>,
-    private val onItemClick: (Room) -> Unit
+    private val onItemClick: (Room) -> Unit,
+    private val onOptionsClick: (Room, View) -> Unit = { _, _ -> }
 ) : RecyclerView.Adapter<RoomAdapter.RoomViewHolder>() {
 
     private val gradients = listOf(
@@ -29,6 +30,7 @@ class RoomAdapter(
         val tvMemberBadge: TextView = itemView.findViewById(R.id.tvMemberBadge)
         val flCardBanner: FrameLayout = itemView.findViewById(R.id.flCardBanner)
         val btnViewItinerary: View = itemView.findViewById(R.id.btnViewItinerary)
+        val ibRoomOptions: View = itemView.findViewById(R.id.ibRoomOptions)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RoomViewHolder {
@@ -48,6 +50,7 @@ class RoomAdapter(
 
         holder.btnViewItinerary.setOnClickListener { onItemClick(room) }
         holder.itemView.setOnClickListener { onItemClick(room) }
+        holder.ibRoomOptions.setOnClickListener { onOptionsClick(room, it) }
     }
 
     override fun getItemCount(): Int = roomList.size

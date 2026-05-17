@@ -9,5 +9,6 @@ data class Room(
     val status: String = "PLANNING",
     val inviteCode: String = "",
     val startDate: String = "",
-    val endDate: String = ""
+    val endDate: String = "",
+    val isOwner: Boolean = false
 )
