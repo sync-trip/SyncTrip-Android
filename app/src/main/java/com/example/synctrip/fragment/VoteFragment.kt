@@ -76,8 +76,11 @@ class VoteFragment : Fragment() {
                         places.clear()
                         places.addAll(response.body() ?: emptyList())
 
-                        // 내가 담은 장소는 이미 자동 좋아요 처리됨 → 버튼 비활성화
-                        places.filter { it.myBookmark }.forEach { votedMap[it.placeId] = 1 }
+                        // 내가 담은 장소 → UI 자동 좋아요 + 서버에도 투표 전송
+                        places.filter { it.myBookmark }.forEach { place ->
+                            votedMap[place.placeId] = 1
+                            autoLike(place.placeId)
+                        }
 
                         adapter.notifyDataSetChanged()
                         loadMyVoteStatus(tvTimer)
@@ -130,6 +133,14 @@ class VoteFragment : Fragment() {
 
     private fun updateProgressText(tvTimer: TextView, voted: Int, total: Int) {
         tvTimer.text = if (voted >= total && total > 0) "✅  투표 완료! ($voted/$total)" else "내 투표: $voted / $total 장소"
+    }
+
+    private fun autoLike(placeId: Long) {
+        RetrofitClient.api.vote(bandId, VoteRequest(placeId, 1))
+            .enqueue(object : Callback<VoteResponse> {
+                override fun onResponse(call: Call<VoteResponse>, response: Response<VoteResponse>) {}
+                override fun onFailure(call: Call<VoteResponse>, t: Throwable) {}
+            })
     }
 
     private fun connectWebSocket() {

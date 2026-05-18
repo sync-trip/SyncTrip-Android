@@ -188,15 +188,22 @@ class MainActivity : AppCompatActivity() {
         RetrofitClient.api.deleteBand(room.bandId)
             .enqueue(object : Callback<Void> {
                 override fun onResponse(call: Call<Void>, response: Response<Void>) {
+                    val removeFromList = {
+                        val idx = roomList.indexOfFirst { it.bandId == room.bandId }
+                        if (idx != -1) {
+                            roomList.removeAt(idx)
+                            rvRoomList.adapter?.notifyItemRemoved(idx)
+                        }
+                        updateEmptyView()
+                    }
                     when {
                         response.isSuccessful -> {
-                            val idx = roomList.indexOfFirst { it.bandId == room.bandId }
-                            if (idx != -1) {
-                                roomList.removeAt(idx)
-                                rvRoomList.adapter?.notifyItemRemoved(idx)
-                            }
-                            updateEmptyView()
+                            removeFromList()
                             android.widget.Toast.makeText(this@MainActivity, "방이 삭제됐어요", android.widget.Toast.LENGTH_SHORT).show()
+                        }
+                        response.code() == 404 -> {
+                            removeFromList()
+                            android.widget.Toast.makeText(this@MainActivity, "이미 삭제된 방이에요", android.widget.Toast.LENGTH_SHORT).show()
                         }
                         else -> {
                             val errorBody = response.errorBody()?.string() ?: ""

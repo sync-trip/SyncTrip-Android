@@ -3,17 +3,19 @@ package com.example.synctrip
 import com.example.synctrip.dto.TestResponse
 import com.example.synctrip.dto.band.BandReadyResponse
 import com.example.synctrip.dto.band.BandStatusTransitionResponse
+import com.example.synctrip.dto.destination.DestinationResponse
 import com.example.synctrip.dto.kakao.KakaoLoginRequest
 import com.example.synctrip.dto.kakao.KakaoLoginResponse
+import com.example.synctrip.dto.kakao.TokenRefreshRequest
 import com.example.synctrip.dto.group.BandInviteCodeResponse
 import com.example.synctrip.dto.group.BandJoinRequest
 import com.example.synctrip.dto.group.BandMemberResponse
 import com.example.synctrip.dto.group.BandSummary
 import com.example.synctrip.dto.group.CreateBandRequest
-import com.example.synctrip.dto.group.CreateBandResponse
 import com.example.synctrip.dto.group.PlacePickListResponse
 import com.example.synctrip.dto.group.PlacePickRequest
 import com.example.synctrip.dto.group.PlacePickResponse
+import com.example.synctrip.dto.place.PlaceSearchResult
 import com.example.synctrip.dto.schedule.ScheduleAltResponse
 import com.example.synctrip.dto.schedule.ScheduleResponse
 import com.example.synctrip.dto.vote.GroupVoteStatusResponse
@@ -27,6 +29,7 @@ import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface ApiService {
 
@@ -36,10 +39,34 @@ interface ApiService {
     @GET("hello")
     fun getHello(): Call<TestResponse>
 
+    // ─── Destinations ────────────────────────────────────────────────────────
+
+    @GET("api/destinations/popular")
+    fun getPopularDestinations(): Call<List<DestinationResponse>>
+
+    @GET("api/destinations/search")
+    fun searchDestinations(@Query("query") query: String): Call<List<DestinationResponse>>
+
+    @GET("api/bands/{bandId}/places/search")
+    fun searchOverseasPlaces(
+        @Path("bandId") bandId: Long,
+        @Query("category") category: String? = null,
+        @Query("radiusMeters") radiusMeters: Double? = null
+    ): Call<List<PlaceSearchResult>>
+
     // ─── Auth ───────────────────────────────────────────────────────────────
 
     @POST("auth/kakao/login")
     fun kakaoLogin(@Body request: KakaoLoginRequest): Call<KakaoLoginResponse>
+
+    @POST("auth/kakao/refresh")
+    fun refreshToken(@Body request: TokenRefreshRequest): Call<KakaoLoginResponse>
+
+    @POST("auth/kakao/logout")
+    fun logout(): Call<Void>
+
+    @DELETE("auth/kakao/withdraw")
+    fun withdraw(): Call<Void>
 
     // ─── Band ───────────────────────────────────────────────────────────────
 
@@ -47,7 +74,7 @@ interface ApiService {
     fun getMyBands(): Call<List<BandSummary>>
 
     @POST("api/bands")
-    fun createBand(@Body request: CreateBandRequest): Call<CreateBandResponse>
+    fun createBand(@Body request: CreateBandRequest): Call<BandSummary>
 
     @POST("api/bands/join")
     fun joinBand(@Body request: BandJoinRequest): Call<BandSummary>

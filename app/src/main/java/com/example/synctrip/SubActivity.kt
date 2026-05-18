@@ -15,6 +15,7 @@ class SubActivity : AppCompatActivity() {
 
     private var bandId: Long = -1L
     private var bandStatus: String = "PLANNING"
+    private var overseas: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,6 +27,7 @@ class SubActivity : AppCompatActivity() {
         val startDate = intent.getStringExtra("START_DATE") ?: ""
         val endDate = intent.getStringExtra("END_DATE") ?: ""
         bandStatus = intent.getStringExtra("BAND_STATUS") ?: "PLANNING"
+        overseas = intent.getBooleanExtra("OVERSEAS", false)
 
         val toolbar = findViewById<MaterialToolbar>(R.id.toolbar)
         toolbar.title = roomName
@@ -45,6 +47,8 @@ class SubActivity : AppCompatActivity() {
             true
         }
     }
+
+    fun isOverseas(): Boolean = overseas
 
     fun switchToVoteTab() {
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottom_navigation)

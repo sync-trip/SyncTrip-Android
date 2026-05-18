@@ -15,6 +15,7 @@ import com.example.synctrip.dto.group.PlacePickRequest
 import com.example.synctrip.dto.group.PlacePickResponse
 import com.example.synctrip.dto.kakao.PlaceDocument
 import com.example.synctrip.dto.kakao.PlaceSearchResponse
+import com.example.synctrip.dto.place.PlaceSearchResult
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.chip.ChipGroup
 import retrofit2.Call
@@ -27,6 +28,7 @@ class PlaceSearchActivity : AppCompatActivity() {
     private val filteredResults = mutableListOf<PlaceDocument>()
     private lateinit var adapter: PlaceSearchAdapter
     private var bandId: Long = -1L
+    private var overseas: Boolean = false
     private var currentCategory = "전체"
     private var currentPickCount = 0
     private var maxPickCount = 5
@@ -36,6 +38,8 @@ class PlaceSearchActivity : AppCompatActivity() {
         setContentView(R.layout.activity_place_search)
 
         bandId = intent.getLongExtra("BAND_ID", -1L)
+        overseas = intent.getBooleanExtra("OVERSEAS", false)
+        android.util.Log.d("PlaceSearch", "bandId=$bandId overseas=$overseas")
 
         val toolbar = findViewById<MaterialToolbar>(R.id.toolbar)
         toolbar.setNavigationOnClickListener { finish() }
@@ -51,7 +55,7 @@ class PlaceSearchActivity : AppCompatActivity() {
                 val query = etSearch.text.toString().trim()
                 if (query.isNotEmpty()) {
                     hideKeyboard(etSearch)
-                    searchPlaces(query)
+                    if (overseas) searchOverseasPlaces() else searchPlaces(query)
                 }
                 true
             } else false
@@ -66,7 +70,7 @@ class PlaceSearchActivity : AppCompatActivity() {
                 R.id.chipAccom   -> "숙소"
                 else             -> "전체"
             }
-            applyFilter()
+            if (overseas) searchOverseasPlaces() else applyFilter()
         }
 
         loadPickCount()
@@ -90,6 +94,46 @@ class PlaceSearchActivity : AppCompatActivity() {
             })
     }
 
+    private fun searchOverseasPlaces() {
+        if (bandId == -1L) return
+        val serverCategory = when (currentCategory) {
+            "맛집"  -> "FOOD"
+            "관광지" -> "CULTURE"
+            "카페"  -> "FOOD"
+            "숙소"  -> "ETC"
+            else   -> null
+        }
+        RetrofitClient.api.searchOverseasPlaces(bandId, serverCategory)
+            .enqueue(object : Callback<List<PlaceSearchResult>> {
+                override fun onResponse(call: Call<List<PlaceSearchResult>>, response: Response<List<PlaceSearchResult>>) {
+                    if (response.isSuccessful) {
+                        val results = response.body() ?: emptyList()
+                        allResults.clear()
+                        filteredResults.clear()
+                        filteredResults.addAll(results.map { it.toPlaceDocument() })
+                        adapter.notifyDataSetChanged()
+                    } else {
+                        android.widget.Toast.makeText(this@PlaceSearchActivity, "검색 실패: ${response.code()}", android.widget.Toast.LENGTH_SHORT).show()
+                    }
+                }
+                override fun onFailure(call: Call<List<PlaceSearchResult>>, t: Throwable) {
+                    android.util.Log.e("PlaceSearch", "해외 장소 검색 실패: ${t.message}")
+                }
+            })
+    }
+
+    private fun PlaceSearchResult.toPlaceDocument() = PlaceDocument(
+        id = externalId,
+        place_name = name,
+        category_name = category,
+        address_name = address,
+        road_address_name = address,
+        x = longitude.toString(),
+        y = latitude.toString(),
+        phone = null,
+        place_url = thumbnailUrl
+    )
+
     private fun applyFilter() {
         filteredResults.clear()
         filteredResults.addAll(
@@ -109,11 +153,15 @@ class PlaceSearchActivity : AppCompatActivity() {
 
     private fun addPick(place: PlaceDocument) {
         if (bandId == -1L) return
+        if (currentPickCount >= maxPickCount) {
+            android.widget.Toast.makeText(this, "장소를 ${maxPickCount}개 모두 담았어요!\n더 담으려면 홈에서 기존 장소를 삭제해주세요.", android.widget.Toast.LENGTH_LONG).show()
+            return
+        }
         val request = PlacePickRequest(
-            apiSource = "KAKAO",
+            apiSource = if (overseas) "GOOGLE" else "KAKAO",
             externalId = place.id,
             name = place.place_name,
-            category = kakaoToCategory(place.category_name),
+            category = if (overseas) place.category_name else kakaoToCategory(place.category_name),
             latitude = place.y.toDouble(),
             longitude = place.x.toDouble(),
             address = place.road_address_name.ifEmpty { place.address_name }

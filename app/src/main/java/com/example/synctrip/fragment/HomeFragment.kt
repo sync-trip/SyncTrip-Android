@@ -17,10 +17,13 @@ import com.example.synctrip.RetrofitClient
 import com.example.synctrip.SubActivity
 import com.example.synctrip.TokenManager
 import com.example.synctrip.adapter.MemberAdapter
+import com.example.synctrip.adapter.PlaceAdapter
+import com.example.synctrip.dto.band.BandReadyResponse
 import com.example.synctrip.dto.band.BandStatusTransitionResponse
 import com.example.synctrip.dto.group.BandInviteCodeResponse
 import com.example.synctrip.dto.group.BandMemberResponse
 import com.example.synctrip.dto.group.PlacePickListResponse
+import com.example.synctrip.dto.group.PlacePickResponse
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
 import retrofit2.Call
@@ -48,6 +51,10 @@ class HomeFragment : Fragment() {
     private var bandStatus: String = "PLANNING"
     private var maxPickCount: Int = 5
     private var currentPickCount: Int = 0
+    private var myReadyState: Boolean = false
+
+    private val pickList = mutableListOf<PlacePickResponse>()
+    private lateinit var placeAdapter: PlaceAdapter
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_home, container, false)
@@ -62,7 +69,6 @@ class HomeFragment : Fragment() {
         val startDate = arguments?.getString("START_DATE") ?: ""
         val endDate = arguments?.getString("END_DATE") ?: ""
 
-        // Hero content
         view.findViewById<TextView>(R.id.tvTripTitle).text = roomName.ifEmpty { "여행" }
         if (startDate.isNotEmpty() && endDate.isNotEmpty()) {
             val s = startDate.replace("-", ". ")
@@ -70,11 +76,17 @@ class HomeFragment : Fragment() {
             view.findViewById<TextView>(R.id.tvTripDate).text = "$s - $e"
         }
 
-        // Member RecyclerView
+        // 멤버 RecyclerView
         val rvMembers = view.findViewById<RecyclerView>(R.id.rvMembers)
         rvMembers.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
 
-        // Invite FAB
+        // 담은 장소 RecyclerView
+        val rvPicks = view.findViewById<RecyclerView>(R.id.rvPicks)
+        rvPicks.layoutManager = LinearLayoutManager(requireContext())
+        placeAdapter = PlaceAdapter(pickList) { place, position -> deletePick(place, position) }
+        rvPicks.adapter = placeAdapter
+
+        // 초대코드
         val cardInviteCode = view.findViewById<MaterialCardView>(R.id.cardInviteCode)
         val tvInviteCode = view.findViewById<TextView>(R.id.tvInviteCode)
 
@@ -92,35 +104,34 @@ class HomeFragment : Fragment() {
                         cardInviteCode.visibility = View.VISIBLE
                     }
                     override fun onFailure(call: Call<BandInviteCodeResponse>, t: Throwable) {
-                        android.widget.Toast.makeText(requireContext(), "코드를 불러오지 못했어요", android.widget.Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), "코드를 불러오지 못했어요", Toast.LENGTH_SHORT).show()
                     }
                 })
         }
 
-        // Copy invite code
         view.findViewById<View>(R.id.btnCopyCode).setOnClickListener {
             val code = tvInviteCode.text.toString()
             if (code.isEmpty()) return@setOnClickListener
             val clipboard = requireContext().getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
             clipboard.setPrimaryClip(android.content.ClipData.newPlainText("초대 코드", code))
-            android.widget.Toast.makeText(requireContext(), "초대 코드가 복사됐어요!", android.widget.Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), "초대 코드가 복사됐어요!", Toast.LENGTH_SHORT).show()
         }
 
-        // "참여하기" → PlaceSearch OR vote tab depending on picks count
+        // 장소 담기 / 투표 이동
         view.findViewById<View>(R.id.layoutParticipate).setOnClickListener {
             if (currentPickCount >= maxPickCount) {
+                Toast.makeText(requireContext(), "장소를 ${maxPickCount}개 모두 담았어요! 투표로 이동할게요.", Toast.LENGTH_SHORT).show()
                 (activity as? SubActivity)?.switchToVoteTab()
             } else {
+                val overseas = (activity as? SubActivity)?.isOverseas() ?: false
                 startActivity(Intent(requireContext(), PlaceSearchActivity::class.java).apply {
                     putExtra("BAND_ID", bandId)
+                    putExtra("OVERSEAS", overseas)
                 })
             }
         }
 
-        // 클릭 리스너 설정 후 밴드 상태 반영 (순서 중요: showVotingState가 layoutParticipate 리스너를 덮어씀)
-        if (bandStatus != "PLANNING") {
-            applyBandStatus(view, bandStatus)
-        }
+        if (bandStatus != "PLANNING") applyBandStatus(view, bandStatus)
 
         loadMembers(rvMembers, view)
         loadMyPicks(view)
@@ -145,6 +156,7 @@ class HomeFragment : Fragment() {
                         rvMembers.adapter = MemberAdapter(members)
                         rootView.findViewById<TextView>(R.id.tvMemberCountBadge)?.text = "👥 ${members.size} 명"
                         showHostActionIfNeeded(rootView, members)
+                        setupReadyButton(rootView, members)
                     }
                 }
                 override fun onFailure(call: Call<List<BandMemberResponse>>, t: Throwable) {
@@ -155,7 +167,7 @@ class HomeFragment : Fragment() {
 
     private fun showHostActionIfNeeded(rootView: View, members: List<BandMemberResponse>) {
         val myUserId = TokenManager.getUserId(requireContext())
-val isHost = members.any { it.role == "OWNER" && it.userId == myUserId }
+        val isHost = members.any { it.role == "OWNER" && it.userId == myUserId }
         val cardHostAction = rootView.findViewById<MaterialCardView>(R.id.cardHostAction) ?: return
         if (isHost) {
             cardHostAction.visibility = View.VISIBLE
@@ -165,6 +177,64 @@ val isHost = members.any { it.role == "OWNER" && it.userId == myUserId }
         } else {
             cardHostAction.visibility = View.GONE
         }
+    }
+
+    private fun setupReadyButton(rootView: View, members: List<BandMemberResponse>) {
+        val cardReady = rootView.findViewById<MaterialCardView>(R.id.cardReady) ?: return
+        val btnReady = rootView.findViewById<MaterialButton>(R.id.btnReady) ?: return
+
+        val myUserId = TokenManager.getUserId(requireContext())
+        val me = members.firstOrNull { it.userId == myUserId }
+        val isHost = me?.role == "OWNER"
+
+        if (bandStatus == "PLANNING" && !isHost) {
+            cardReady.visibility = View.VISIBLE
+            myReadyState = me?.isReady ?: false
+            updateReadyButtonUI(btnReady, myReadyState)
+            btnReady.setOnClickListener { toggleReady(btnReady) }
+        } else {
+            cardReady.visibility = View.GONE
+        }
+    }
+
+    private fun updateReadyButtonUI(btn: MaterialButton, isReady: Boolean) {
+        if (isReady) {
+            btn.text = "✅ 준비 완료됨 (취소하기)"
+            btn.setBackgroundColor(requireContext().getColor(R.color.surface_container_high))
+            btn.setTextColor(requireContext().getColor(R.color.text_secondary))
+        } else {
+            btn.text = "준비 완료"
+            btn.setBackgroundColor(requireContext().getColor(R.color.primary))
+            btn.setTextColor(requireContext().getColor(android.R.color.white))
+        }
+    }
+
+    private fun toggleReady(btn: MaterialButton) {
+        if (bandId == -1L) return
+        btn.isEnabled = false
+        val call = if (myReadyState) RetrofitClient.api.cancelReady(bandId)
+                   else RetrofitClient.api.setReady(bandId)
+        call.enqueue(object : Callback<BandReadyResponse> {
+            override fun onResponse(call: Call<BandReadyResponse>, response: Response<BandReadyResponse>) {
+                if (!isAdded) return
+                btn.isEnabled = true
+                if (response.isSuccessful) {
+                    myReadyState = !myReadyState
+                    updateReadyButtonUI(btn, myReadyState)
+                    Toast.makeText(requireContext(), if (myReadyState) "준비 완료!" else "준비를 취소했어요", Toast.LENGTH_SHORT).show()
+                    // 멤버 아바타 배지 새로고침
+                    val v = view ?: return
+                    val rv = v.findViewById<RecyclerView>(R.id.rvMembers) ?: return
+                    loadMembers(rv, v)
+                } else {
+                    Toast.makeText(requireContext(), "요청 실패 (${response.code()})", Toast.LENGTH_SHORT).show()
+                }
+            }
+            override fun onFailure(call: Call<BandReadyResponse>, t: Throwable) {
+                btn.isEnabled = true
+                Toast.makeText(requireContext(), "서버 연결 실패", Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 
     private fun advanceBandStatus() {
@@ -208,10 +278,10 @@ val isHost = members.any { it.role == "OWNER" && it.userId == myUserId }
     private fun applyBandStatus(view: View, status: String) {
         val btnAdvance = view.findViewById<MaterialButton>(R.id.btnAdvanceStatus)
         val tvBadge = view.findViewById<TextView>(R.id.tvStatusBadge)
+        // 상태 전환 후 Ready 버튼 숨김
+        view.findViewById<MaterialCardView>(R.id.cardReady)?.visibility = View.GONE
         when (status) {
-            "VOTING" -> {
-                showVotingState(view)
-            }
+            "VOTING" -> showVotingState(view)
             "GENERATING" -> {
                 tvBadge?.text = "⚙️  일정 생성 중"
                 btnAdvance?.apply { isEnabled = false; text = "⚙️  일정 생성 중" }
@@ -242,14 +312,43 @@ val isHost = members.any { it.role == "OWNER" && it.userId == myUserId }
                         currentPickCount = data.currentCount
                         maxPickCount = data.maxCount
                         updateProgressUI(view, data.currentCount, data.maxCount)
+
+                        pickList.clear()
+                        pickList.addAll(data.items)
+                        placeAdapter.notifyDataSetChanged()
+                        view.findViewById<View>(R.id.layoutPicks).visibility =
+                            if (pickList.isNotEmpty()) View.VISIBLE else View.GONE
                     } else if (response.code() == 403) {
-                        // 투표 단계 이후 → 장바구니 잠김
                         if (bandStatus == "PLANNING") bandStatus = "VOTING"
                         showVotingState(view)
                     }
                 }
                 override fun onFailure(call: Call<PlacePickListResponse>, t: Throwable) {
                     android.util.Log.e("HomeFragment", "장소 목록 로드 실패: ${t.message}")
+                }
+            })
+    }
+
+    private fun deletePick(place: PlacePickResponse, position: Int) {
+        if (bandId == -1L) return
+        RetrofitClient.api.deletePick(bandId, place.placeId)
+            .enqueue(object : Callback<Void> {
+                override fun onResponse(call: Call<Void>, response: Response<Void>) {
+                    if (!isAdded) return
+                    if (response.isSuccessful) {
+                        placeAdapter.removeAt(position)
+                        currentPickCount = maxOf(0, currentPickCount - 1)
+                        val v = view ?: return
+                        updateProgressUI(v, currentPickCount, maxPickCount)
+                        v.findViewById<View>(R.id.layoutPicks).visibility =
+                            if (pickList.isEmpty()) View.GONE else View.VISIBLE
+                        Toast.makeText(requireContext(), "장소를 삭제했어요", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(requireContext(), "삭제 실패 (${response.code()})", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                override fun onFailure(call: Call<Void>, t: Throwable) {
+                    Toast.makeText(requireContext(), "서버 연결 실패", Toast.LENGTH_SHORT).show()
                 }
             })
     }
@@ -262,7 +361,6 @@ val isHost = members.any { it.role == "OWNER" && it.userId == myUserId }
         view.findViewById<View>(R.id.layoutParticipate).setOnClickListener {
             (activity as? SubActivity)?.switchToVoteTab()
         }
-        // 방장 버튼도 현재 상태에 맞게 업데이트
         view.findViewById<MaterialButton>(R.id.btnAdvanceStatus)?.apply {
             isEnabled = true
             text = "일정 생성하기 →"
@@ -275,7 +373,6 @@ val isHost = members.any { it.role == "OWNER" && it.userId == myUserId }
         progressBar.max = max
         progressBar.progress = current
 
-        // Update current step label
         val tvCurrentStep = view.findViewById<TextView>(R.id.tvCurrentStep)
         if (current >= max) {
             tvCurrentStep.text = "투표하기"

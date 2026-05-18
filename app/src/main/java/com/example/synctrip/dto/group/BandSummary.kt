@@ -10,4 +10,3 @@ data class BandSummary(
     val status: String? = null,
     val isOwner: Boolean = false
 )
-    

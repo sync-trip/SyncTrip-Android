@@ -50,10 +50,10 @@ class ScheduleFragment : Fragment() {
             return
         }
 
-        loadSchedule(rvScheduleList, tabLayout)
+        loadSchedule(rvScheduleList, tabLayout, view.findViewById(R.id.tvScheduleEmpty))
     }
 
-    private fun loadSchedule(rvScheduleList: RecyclerView, tabLayout: TabLayout) {
+    private fun loadSchedule(rvScheduleList: RecyclerView, tabLayout: TabLayout, tvEmpty: TextView) {
         RetrofitClient.api.getSchedule(bandId)
             .enqueue(object : Callback<ScheduleResponse> {
                 override fun onResponse(call: Call<ScheduleResponse>, response: Response<ScheduleResponse>) {
@@ -63,10 +63,11 @@ class ScheduleFragment : Fragment() {
                         val allDays = scheduleResponse.days
 
                         if (allDays.isEmpty()) {
-                            rvScheduleList.adapter = ScheduleAdapter(emptyList())
+                            showEmpty(rvScheduleList, tvEmpty)
                             return
                         }
 
+                        tvEmpty.visibility = View.GONE
                         tabLayout.removeAllTabs()
                         allDays.forEach { day ->
                             tabLayout.addTab(tabLayout.newTab().setText("${day.dayNumber}일차"))
@@ -82,15 +83,23 @@ class ScheduleFragment : Fragment() {
                             override fun onTabReselected(tab: TabLayout.Tab) {}
                         })
                     } else {
-                        // 일정이 아직 없는 경우
-                        rvScheduleList.adapter = ScheduleAdapter(emptyList())
+                        showEmpty(rvScheduleList, tvEmpty,
+                            if (response.code() == 404) "아직 생성된 일정이 없어요\n투표 완료 후 방장이 일정을 생성해주세요"
+                            else "일정을 불러오지 못했어요 (${response.code()})"
+                        )
                     }
                 }
                 override fun onFailure(call: Call<ScheduleResponse>, t: Throwable) {
                     if (!isAdded) return
-                    rvScheduleList.adapter = ScheduleAdapter(emptyList())
+                    showEmpty(rvScheduleList, tvEmpty, "서버 연결 실패")
                 }
             })
+    }
+
+    private fun showEmpty(rv: RecyclerView, tv: TextView, msg: String = tv.text.toString()) {
+        rv.adapter = ScheduleAdapter(emptyList())
+        tv.text = msg
+        tv.visibility = View.VISIBLE
     }
 
     private fun dayToSchedule(day: ScheduleDayResponse): List<Schedule> {

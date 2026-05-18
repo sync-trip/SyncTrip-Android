@@ -7,10 +7,10 @@
     android:orientation="vertical"
     android:background="@color/background">
 
-    <!-- TopAppBar -->
+    <!-- Top Bar -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="64dp"
+        android:layout_height="56dp"
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:paddingHorizontal="8dp"
@@ -26,41 +26,54 @@
             app:tint="@color/text_secondary" />
 
         <TextView
+            android:id="@+id/tvStepTitle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center"
-            android:text="새로운 여정"
+            android:text="여행지 선택"
             android:textColor="@color/primary"
-            android:textSize="22sp"
+            android:textSize="18sp"
             android:textStyle="bold" />
 
-        <!-- Spacer for center alignment -->
-        <View
+        <TextView
+            android:id="@+id/tvStepIndicator"
             android:layout_width="44dp"
-            android:layout_height="44dp" />
-
+            android:layout_height="44dp"
+            android:gravity="center"
+            android:text="1/3"
+            android:textColor="@color/text_secondary"
+            android:textSize="14sp" />
     </LinearLayout>
 
-    <!-- Scrollable content -->
-    <androidx.core.widget.NestedScrollView
+    <!-- Progress bar showing step -->
+    <View
+        android:id="@+id/progressBar"
+        android:layout_width="match_parent"
+        android:layout_height="3dp"
+        android:background="@color/primary" />
+
+    <!-- Container -->
+    <FrameLayout
+        android:id="@+id/stepContainer"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1">
 
+        <!-- ============ STEP 1: 여행지 선택 ============ -->
         <LinearLayout
+            android:id="@+id/step1"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:orientation="vertical">
 
-            <!-- STEP 1: Destination -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:paddingHorizontal="20dp"
-                android:paddingTop="24dp"
-                android:paddingBottom="24dp">
+                android:paddingTop="20dp"
+                android:paddingBottom="8dp">
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -70,157 +83,238 @@
                     android:textSize="22sp"
                     android:textStyle="bold" />
 
-                <!-- Country input -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="인기 여행지에서 골라보세요"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="13sp" />
+
+                <EditText
+                    android:id="@+id/etSearch"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
                     android:layout_marginTop="16dp"
-                    android:text="나라"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="12sp"
-                    android:textAllCaps="true"
-                    android:letterSpacing="0.06" />
-
-                <EditText
-                    android:id="@+id/etCountry"
-                    android:layout_width="match_parent"
-                    android:layout_height="52dp"
-                    android:layout_marginTop="6dp"
                     android:background="@drawable/bg_input_field"
-                    android:hint="예) 일본, 프랑스, 한국"
+                    android:hint="🔍  도시 이름으로 검색"
                     android:textColorHint="@color/text_hint"
                     android:inputType="text"
+                    android:imeOptions="actionSearch"
                     android:paddingHorizontal="16dp"
                     android:textColor="@color/text_primary"
-                    android:textSize="16sp" />
+                    android:textSize="15sp" />
 
-                <!-- City input -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:text="도시"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="12sp"
-                    android:textAllCaps="true"
-                    android:letterSpacing="0.06" />
-
-                <EditText
-                    android:id="@+id/etCity"
-                    android:layout_width="match_parent"
-                    android:layout_height="52dp"
-                    android:layout_marginTop="6dp"
-                    android:background="@drawable/bg_input_field"
-                    android:hint="예) 도쿄, 파리, 제주"
-                    android:textColorHint="@color/text_hint"
-                    android:inputType="text"
-                    android:paddingHorizontal="16dp"
-                    android:textColor="@color/text_primary"
-                    android:textSize="16sp" />
-
-                <!-- Quick suggestions -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="20dp"
-                    android:layout_marginBottom="10dp"
-                    android:text="추천 목적지"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="12sp"
-                    android:textAllCaps="true"
-                    android:letterSpacing="0.06" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="100dp"
-                    android:orientation="horizontal">
-
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/cardTokyo"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:layout_marginEnd="6dp"
-                        app:cardCornerRadius="12dp"
-                        app:cardElevation="2dp"
-                        app:strokeWidth="0dp">
-
-                        <FrameLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:background="@drawable/bg_suggestion_tokyo">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_gravity="center"
-                                android:text="🗼 도쿄"
-                                android:textColor="@android:color/white"
-                                android:textSize="18sp"
-                                android:textStyle="bold" />
-
-                        </FrameLayout>
-
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/cardParis"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:layout_marginStart="6dp"
-                        app:cardCornerRadius="12dp"
-                        app:cardElevation="2dp"
-                        app:strokeWidth="0dp">
-
-                        <FrameLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:background="@drawable/bg_suggestion_paris">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_gravity="center"
-                                android:text="🗺️ 파리"
-                                android:textColor="@android:color/white"
-                                android:textSize="18sp"
-                                android:textStyle="bold" />
-
-                        </FrameLayout>
-
-                    </com.google.android.material.card.MaterialCardView>
-
-                </LinearLayout>
-
+                    android:text="🌟  TOP 인기 여행지"
+                    android:textColor="@color/text_primary"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
             </LinearLayout>
 
-            <!-- Divider -->
-            <View
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvPopular"
                 android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginHorizontal="20dp"
-                android:background="@color/outline_variant"
-                android:alpha="0.5" />
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:paddingHorizontal="14dp"
+                android:paddingBottom="16dp"
+                android:clipToPadding="false" />
+        </LinearLayout>
 
-            <!-- STEP 2: Dates -->
+        <!-- ============ STEP 2: 도시 상세 선택 ============ -->
+        <LinearLayout
+            android:id="@+id/step2"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:visibility="gone">
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:paddingHorizontal="20dp"
-                android:paddingTop="24dp"
+                android:paddingTop="20dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="도시를 선택해주세요"
+                    android:textColor="@color/text_primary"
+                    android:textSize="22sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <com.google.android.material.tabs.TabLayout
+                android:id="@+id/tabLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                app:tabMode="fixed"
+                app:tabIndicatorColor="@color/primary"
+                app:tabSelectedTextColor="@color/primary"
+                app:tabTextColor="@color/text_secondary">
+
+                <com.google.android.material.tabs.TabItem
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="해외" />
+
+                <com.google.android.material.tabs.TabItem
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="국내" />
+            </com.google.android.material.tabs.TabLayout>
+
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:scrollbars="none"
+                android:paddingVertical="10dp">
+
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/chipGroupRegion"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="20dp"
+                    app:singleSelection="true"
+                    app:selectionRequired="true"
+                    app:chipSpacingHorizontal="6dp" />
+            </HorizontalScrollView>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvCities"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:paddingBottom="16dp"
+                android:clipToPadding="false" />
+        </LinearLayout>
+
+        <!-- ============ STEP 3: 여행 정보 입력 ============ -->
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/step3"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingHorizontal="20dp"
+                android:paddingTop="20dp"
                 android:paddingBottom="24dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="언제 떠나시나요?"
+                    android:text="여행 정보를 입력해주세요"
                     android:textColor="@color/text_primary"
                     android:textSize="22sp"
                     android:textStyle="bold" />
 
-                <!-- Start date card -->
+                <!-- Selected destination preview -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    app:cardCornerRadius="14dp"
+                    app:cardElevation="1dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="@color/primary"
+                    app:cardBackgroundColor="@color/primary_container">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:padding="14dp">
+
+                        <TextView
+                            android:id="@+id/tvSelectedFlag"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="🇯🇵"
+                            android:textSize="32sp" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="12dp"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="선택한 여행지"
+                                android:textColor="@color/on_primary_container"
+                                android:textSize="11sp" />
+
+                            <TextView
+                                android:id="@+id/tvSelectedCity"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:text="도쿄, 일본"
+                                android:textColor="@color/on_primary_container"
+                                android:textSize="17sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Band name -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:text="밴드 이름"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp"
+                    android:textAllCaps="true"
+                    android:letterSpacing="0.06" />
+
+                <EditText
+                    android:id="@+id/etBandName"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:layout_marginTop="6dp"
+                    android:background="@drawable/bg_input_field"
+                    android:hint="예) 도쿄 여행"
+                    android:textColorHint="@color/text_hint"
+                    android:inputType="text"
+                    android:paddingHorizontal="16dp"
+                    android:textColor="@color/text_primary"
+                    android:textSize="15sp" />
+
+                <TextView
+                    android:id="@+id/tvErrorName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="여행 이름을 입력해주세요"
+                    android:textColor="@color/danger"
+                    android:textSize="12sp"
+                    android:visibility="gone" />
+
+                <!-- Dates -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:text="여행 기간"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp"
+                    android:textAllCaps="true"
+                    android:letterSpacing="0.06" />
+
                 <LinearLayout
                     android:id="@+id/layoutStartDate"
                     android:layout_width="match_parent"
@@ -229,7 +323,7 @@
                     android:gravity="center_vertical"
                     android:background="@drawable/bg_date_card"
                     android:padding="16dp"
-                    android:layout_marginTop="16dp"
+                    android:layout_marginTop="10dp"
                     android:clickable="true"
                     android:focusable="true">
 
@@ -244,7 +338,6 @@
                             android:layout_gravity="center"
                             android:src="@android:drawable/ic_menu_today"
                             app:tint="@color/on_primary_container" />
-
                     </FrameLayout>
 
                     <LinearLayout
@@ -268,20 +361,21 @@
                             android:layout_marginTop="2dp"
                             android:text="날짜를 선택하세요"
                             android:textColor="@color/text_primary"
-                            android:textSize="16sp"
+                            android:textSize="15sp"
                             android:textStyle="bold" />
-
                     </LinearLayout>
-
-                    <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:src="@android:drawable/ic_media_next"
-                        app:tint="@color/text_secondary" />
-
                 </LinearLayout>
 
-                <!-- End date card -->
+                <TextView
+                    android:id="@+id/tvErrorStartDate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="출발일을 선택해주세요"
+                    android:textColor="@color/danger"
+                    android:textSize="12sp"
+                    android:visibility="gone" />
+
                 <LinearLayout
                     android:id="@+id/layoutEndDate"
                     android:layout_width="match_parent"
@@ -305,7 +399,6 @@
                             android:layout_gravity="center"
                             android:src="@android:drawable/ic_menu_today"
                             app:tint="@color/on_primary_container" />
-
                     </FrameLayout>
 
                     <LinearLayout
@@ -329,110 +422,99 @@
                             android:layout_marginTop="2dp"
                             android:text="날짜를 선택하세요"
                             android:textColor="@color/text_primary"
-                            android:textSize="16sp"
+                            android:textSize="15sp"
                             android:textStyle="bold" />
-
                     </LinearLayout>
-
-                    <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:src="@android:drawable/ic_media_next"
-                        app:tint="@color/text_secondary" />
-
                 </LinearLayout>
 
-            </LinearLayout>
+                <TextView
+                    android:id="@+id/tvErrorEndDate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="귀국일을 선택해주세요"
+                    android:textColor="@color/danger"
+                    android:textSize="12sp"
+                    android:visibility="gone" />
 
-            <!-- Divider -->
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginHorizontal="20dp"
-                android:background="@color/outline_variant"
-                android:alpha="0.5" />
-
-            <!-- STEP 3: Travel style -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:paddingHorizontal="20dp"
-                android:paddingTop="24dp"
-                android:paddingBottom="32dp">
+                <!-- Themes -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:text="여행 테마"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp"
+                    android:textAllCaps="true"
+                    android:letterSpacing="0.06" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="어떤 여행을 선호하시나요?"
-                    android:textColor="@color/text_primary"
-                    android:textSize="22sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    android:text="다중 선택이 가능합니다."
-                    android:textColor="@color/text_secondary"
-                    android:textSize="14sp" />
+                    android:layout_marginTop="4dp"
+                    android:text="다중 선택 가능"
+                    android:textColor="@color/text_hint"
+                    android:textSize="12sp" />
 
                 <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/chipGroupThemes"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
+                    android:layout_marginTop="10dp"
                     app:singleSelection="false"
                     app:selectionRequired="false">
 
                     <com.google.android.material.chip.Chip
+                        android:id="@+id/chipActivity"
+                        style="@style/Widget.Material3.Chip.Filter"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="🏔️ 액티비티"
-                        style="@style/Widget.Material3.Chip.Filter" />
+                        android:text="🏔️ 액티비티" />
 
                     <com.google.android.material.chip.Chip
+                        android:id="@+id/chipResort"
+                        style="@style/Widget.Material3.Chip.Filter"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="🏖️ 휴양"
-                        style="@style/Widget.Material3.Chip.Filter" />
+                        android:text="🏖️ 휴양" />
 
                     <com.google.android.material.chip.Chip
+                        android:id="@+id/chipFoodie"
+                        style="@style/Widget.Material3.Chip.Filter"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="🍜 맛집 탐방"
-                        style="@style/Widget.Material3.Chip.Filter" />
+                        android:text="🍜 맛집탐방" />
 
                     <com.google.android.material.chip.Chip
+                        android:id="@+id/chipShopping"
+                        style="@style/Widget.Material3.Chip.Filter"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="🛍️ 쇼핑"
-                        style="@style/Widget.Material3.Chip.Filter" />
+                        android:text="🛍️ 쇼핑" />
 
                     <com.google.android.material.chip.Chip
+                        android:id="@+id/chipCulture"
+                        style="@style/Widget.Material3.Chip.Filter"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="🎨 문화 예술"
-                        style="@style/Widget.Material3.Chip.Filter" />
+                        android:text="🎨 문화예술" />
 
                     <com.google.android.material.chip.Chip
+                        android:id="@+id/chipNature"
+                        style="@style/Widget.Material3.Chip.Filter"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="🌿 자연 탐방"
-                        style="@style/Widget.Material3.Chip.Filter" />
-
+                        android:text="🌿 자연탐방" />
                 </com.google.android.material.chip.ChipGroup>
-
             </LinearLayout>
-
-        </LinearLayout>
-
-    </androidx.core.widget.NestedScrollView>
+        </androidx.core.widget.NestedScrollView>
+    </FrameLayout>
 
     <!-- Bottom action bar -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
+        android:orientation="horizontal"
         android:background="@color/surface"
         android:paddingHorizontal="20dp"
         android:paddingTop="12dp"
@@ -440,17 +522,28 @@
         android:elevation="8dp">
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnCreateDone"
-            android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:text="방 만들기"
+            android:id="@+id/btnPrev"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="52dp"
+            android:layout_marginEnd="10dp"
+            android:text="이전"
+            android:textSize="15sp"
+            app:cornerRadius="26dp"
+            android:visibility="gone" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnNext"
+            android:layout_width="0dp"
+            android:layout_height="52dp"
+            android:layout_weight="1"
+            android:text="계속하기"
             android:textColor="@color/white"
-            android:textSize="17sp"
+            android:textSize="16sp"
             android:textStyle="bold"
+            android:enabled="false"
             app:backgroundTint="@color/primary"
-            app:cornerRadius="28dp"
+            app:cornerRadius="26dp"
             app:strokeWidth="0dp" />
-
     </LinearLayout>
-
 </LinearLayout>
