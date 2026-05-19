@@ -12,9 +12,9 @@
         android:title="일정" />
 
     <item
-        android:id="@+id/tab_vote"
-        android:icon="@android:drawable/ic_menu_sort_by_size"
-        android:title="투표" />
+        android:id="@+id/tab_passport"
+        android:icon="@android:drawable/ic_menu_myplaces"
+        android:title="내 여권" />
 
     <item
         android:id="@+id/tab_money"

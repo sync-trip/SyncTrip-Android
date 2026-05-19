@@ -22,6 +22,7 @@ import com.example.synctrip.dto.band.BandReadyResponse
 import com.example.synctrip.dto.band.BandStatusTransitionResponse
 import com.example.synctrip.dto.group.BandInviteCodeResponse
 import com.example.synctrip.dto.group.BandMemberResponse
+import com.example.synctrip.dto.group.BandSummary
 import com.example.synctrip.dto.group.PlacePickListResponse
 import com.example.synctrip.dto.group.PlacePickResponse
 import com.google.android.material.button.MaterialButton
@@ -52,6 +53,9 @@ class HomeFragment : Fragment() {
     private var maxPickCount: Int = 5
     private var currentPickCount: Int = 0
     private var myReadyState: Boolean = false
+
+    private val handler = android.os.Handler(android.os.Looper.getMainLooper())
+    private var isPolling = false
 
     private val pickList = mutableListOf<PlacePickResponse>()
     private lateinit var placeAdapter: PlaceAdapter
@@ -86,29 +90,8 @@ class HomeFragment : Fragment() {
         placeAdapter = PlaceAdapter(pickList) { place, position -> deletePick(place, position) }
         rvPicks.adapter = placeAdapter
 
-        // 초대코드
-        val cardInviteCode = view.findViewById<MaterialCardView>(R.id.cardInviteCode)
+        // 초대코드 복사 버튼
         val tvInviteCode = view.findViewById<TextView>(R.id.tvInviteCode)
-
-        view.findViewById<View>(R.id.btnInvite).setOnClickListener {
-            if (cardInviteCode.visibility == View.VISIBLE) {
-                cardInviteCode.visibility = View.GONE
-                return@setOnClickListener
-            }
-            if (bandId == -1L) return@setOnClickListener
-            RetrofitClient.api.getInviteCode(bandId)
-                .enqueue(object : Callback<BandInviteCodeResponse> {
-                    override fun onResponse(call: Call<BandInviteCodeResponse>, response: Response<BandInviteCodeResponse>) {
-                        val code = response.body()?.inviteCode ?: return
-                        tvInviteCode.text = code
-                        cardInviteCode.visibility = View.VISIBLE
-                    }
-                    override fun onFailure(call: Call<BandInviteCodeResponse>, t: Throwable) {
-                        Toast.makeText(requireContext(), "코드를 불러오지 못했어요", Toast.LENGTH_SHORT).show()
-                    }
-                })
-        }
-
         view.findViewById<View>(R.id.btnCopyCode).setOnClickListener {
             val code = tvInviteCode.text.toString()
             if (code.isEmpty()) return@setOnClickListener
@@ -143,6 +126,46 @@ class HomeFragment : Fragment() {
         loadMyPicks(v)
         val rv = v.findViewById<RecyclerView>(R.id.rvMembers) ?: return
         loadMembers(rv, v)
+        if (bandStatus == "GENERATING" && !isPolling) startGeneratingPoll()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        isPolling = false
+        handler.removeCallbacksAndMessages(null)
+    }
+
+    private fun startGeneratingPoll() {
+        isPolling = true
+        handler.postDelayed({ pollBandStatus() }, 3000L)
+    }
+
+    private fun pollBandStatus() {
+        if (!isAdded || !isPolling || bandStatus != "GENERATING") return
+        RetrofitClient.api.getMyBands()
+            .enqueue(object : Callback<List<BandSummary>> {
+                override fun onResponse(call: Call<List<BandSummary>>, response: Response<List<BandSummary>>) {
+                    if (!isAdded || !isPolling) return
+                    val serverStatus = response.body()?.firstOrNull { it.id == bandId }?.status ?: run {
+                        handler.postDelayed({ pollBandStatus() }, 3000L)
+                        return
+                    }
+                    if (serverStatus != "GENERATING") {
+                        isPolling = false
+                        bandStatus = serverStatus
+                        arguments?.putString("BAND_STATUS", serverStatus)
+                        (activity as? SubActivity)?.updateBandStatus(serverStatus)
+                        val v = view ?: return
+                        applyBandStatus(v, serverStatus)
+                        Toast.makeText(requireContext(), "일정 생성 완료! 여행 준비가 됐어요 🎉", Toast.LENGTH_SHORT).show()
+                    } else {
+                        handler.postDelayed({ pollBandStatus() }, 3000L)
+                    }
+                }
+                override fun onFailure(call: Call<List<BandSummary>>, t: Throwable) {
+                    if (isAdded && isPolling) handler.postDelayed({ pollBandStatus() }, 5000L)
+                }
+            })
     }
 
     private fun loadMembers(rvMembers: RecyclerView, rootView: View) {
@@ -172,7 +195,35 @@ class HomeFragment : Fragment() {
         if (isHost) {
             cardHostAction.visibility = View.VISIBLE
             rootView.findViewById<MaterialButton>(R.id.btnAdvanceStatus)?.setOnClickListener {
+                android.util.Log.d("HomeFragment", "btnAdvanceStatus 클릭 — bandStatus=$bandStatus, pickCount=$currentPickCount")
+                if (bandStatus == "PLANNING" && currentPickCount == 0) {
+                    Toast.makeText(requireContext(), "담은 장소가 없어요!\n먼저 장소를 하나 이상 담아주세요.", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
                 advanceBandStatus()
+            }
+            // 초대코드 버튼 (방장만)
+            val cardInviteCode = rootView.findViewById<MaterialCardView>(R.id.cardInviteCode)
+            val tvInviteCode = rootView.findViewById<TextView>(R.id.tvInviteCode)
+            rootView.findViewById<MaterialButton>(R.id.btnInviteHost)?.setOnClickListener {
+                if (cardInviteCode.visibility == View.VISIBLE) {
+                    cardInviteCode.visibility = View.GONE
+                    return@setOnClickListener
+                }
+                if (bandId == -1L) return@setOnClickListener
+                RetrofitClient.api.getInviteCode(bandId)
+                    .enqueue(object : Callback<BandInviteCodeResponse> {
+                        override fun onResponse(call: Call<BandInviteCodeResponse>, response: Response<BandInviteCodeResponse>) {
+                            if (!isAdded) return
+                            val code = response.body()?.inviteCode ?: return
+                            tvInviteCode.text = code
+                            cardInviteCode.visibility = View.VISIBLE
+                        }
+                        override fun onFailure(call: Call<BandInviteCodeResponse>, t: Throwable) {
+                            if (!isAdded) return
+                            Toast.makeText(requireContext(), "코드를 불러오지 못했어요", Toast.LENGTH_SHORT).show()
+                        }
+                    })
             }
         } else {
             cardHostAction.visibility = View.GONE
@@ -247,9 +298,12 @@ class HomeFragment : Fragment() {
             .enqueue(object : Callback<BandStatusTransitionResponse> {
                 override fun onResponse(call: Call<BandStatusTransitionResponse>, response: Response<BandStatusTransitionResponse>) {
                     if (!isAdded) return
+                    android.util.Log.d("HomeFragment", "advanceBandStatus 응답: ${response.code()}, body=${response.body()?.currentStatus}")
                     if (response.isSuccessful) {
                         val next = response.body()?.currentStatus ?: ""
                         bandStatus = next
+                        arguments?.putString("BAND_STATUS", next)
+                        (activity as? SubActivity)?.updateBandStatus(next)
                         val v = view ?: return
                         applyBandStatus(v, next)
                         val toastMsg = when (next) {
@@ -263,14 +317,22 @@ class HomeFragment : Fragment() {
                     } else {
                         Toast.makeText(requireContext(), "상태 전환 실패 (${response.code()})", Toast.LENGTH_SHORT).show()
                         btn.isEnabled = true
-                        btn.text = "투표 시작하기 →"
+                        btn.text = when (bandStatus) {
+                            "VOTING"      -> "일정 생성하기 →"
+                            "TRAVELLING"  -> "여행 완료하기 →"
+                            else          -> "투표 시작하기 →"
+                        }
                     }
                 }
                 override fun onFailure(call: Call<BandStatusTransitionResponse>, t: Throwable) {
                     if (!isAdded) return
                     Toast.makeText(requireContext(), "서버 연결 실패", Toast.LENGTH_SHORT).show()
                     btn.isEnabled = true
-                    btn.text = "투표 시작하기 →"
+                    btn.text = when (bandStatus) {
+                        "VOTING"      -> "일정 생성하기 →"
+                        "TRAVELLING"  -> "여행 완료하기 →"
+                        else          -> "투표 시작하기 →"
+                    }
                 }
             })
     }
@@ -287,10 +349,11 @@ class HomeFragment : Fragment() {
                 btnAdvance?.apply { isEnabled = false; text = "⚙️  일정 생성 중" }
                 view.findViewById<TextView>(R.id.tvProgressText).text = "장소 담기 완료"
                 view.findViewById<TextView>(R.id.tvCurrentStep).text = "일정 생성 중"
+                if (!isPolling) startGeneratingPoll()
             }
             "TRAVELLING" -> {
                 tvBadge?.text = "✈️  여행 중"
-                btnAdvance?.apply { isEnabled = false; text = "✈️  여행 중" }
+                btnAdvance?.apply { isEnabled = true; text = "여행 완료하기 →" }
                 view.findViewById<TextView>(R.id.tvCurrentStep).text = "여행 중"
             }
             "DONE" -> {
@@ -319,8 +382,16 @@ class HomeFragment : Fragment() {
                         view.findViewById<View>(R.id.layoutPicks).visibility =
                             if (pickList.isNotEmpty()) View.VISIBLE else View.GONE
                     } else if (response.code() == 403) {
-                        if (bandStatus == "PLANNING") bandStatus = "VOTING"
-                        showVotingState(view)
+                        when (bandStatus) {
+                            "PLANNING" -> {
+                                bandStatus = "VOTING"
+                                arguments?.putString("BAND_STATUS", "VOTING")
+                                (activity as? SubActivity)?.updateBandStatus("VOTING")
+                                showVotingState(view)
+                            }
+                            "VOTING" -> showVotingState(view)
+                            // GENERATING / TRAVELLING / DONE: picks API 403 무시 — 현재 UI 유지
+                        }
                     }
                 }
                 override fun onFailure(call: Call<PlacePickListResponse>, t: Throwable) {
