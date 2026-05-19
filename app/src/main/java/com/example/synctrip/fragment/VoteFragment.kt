@@ -9,6 +9,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.synctrip.R
 import com.example.synctrip.RetrofitClient
 import com.example.synctrip.TokenManager
@@ -63,6 +64,17 @@ class VoteFragment : Fragment() {
 
         loadVotePlaces(tvTimer)
         connectWebSocket()
+
+        view.findViewById<SwipeRefreshLayout>(R.id.swipeRefresh)?.apply {
+            setColorSchemeResources(R.color.primary)
+            setOnRefreshListener {
+                places.clear()
+                votedMap.clear()
+                adapter.notifyDataSetChanged()
+                loadVotePlaces(tvTimer)
+                isRefreshing = false
+            }
+        }
     }
 
     private fun loadVotePlaces(tvTimer: TextView) {

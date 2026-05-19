@@ -24,6 +24,7 @@ import com.example.synctrip.dto.destination.DestinationResponse
 import com.example.synctrip.dto.group.BandSummary
 import com.example.synctrip.dto.group.CreateBandRequest
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.card.MaterialCardView
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import com.google.android.material.tabs.TabLayout
@@ -56,7 +57,9 @@ class CreateRoomActivity : AppCompatActivity() {
     private lateinit var tvSelectedCity: TextView
     private lateinit var tvSelectedFlag: TextView
     private lateinit var chipGroupRegion: ChipGroup
-    private lateinit var chipGroupThemes: ChipGroup
+    private lateinit var cardRelaxed: MaterialCardView
+    private lateinit var cardPacked: MaterialCardView
+    private var selectedTravelStyle: String = "RELAXED"
     private lateinit var tabLayout: TabLayout
     private lateinit var tvErrorName: TextView
     private lateinit var tvErrorStartDate: TextView
@@ -217,10 +220,15 @@ class CreateRoomActivity : AppCompatActivity() {
         tvEndDate = findViewById(R.id.tvEndDate)
         tvSelectedCity = findViewById(R.id.tvSelectedCity)
         tvSelectedFlag = findViewById(R.id.tvSelectedFlag)
-        chipGroupThemes = findViewById(R.id.chipGroupThemes)
+        cardRelaxed = findViewById(R.id.cardRelaxed)
+        cardPacked = findViewById(R.id.cardPacked)
         tvErrorName = findViewById(R.id.tvErrorName)
         tvErrorStartDate = findViewById(R.id.tvErrorStartDate)
         tvErrorEndDate = findViewById(R.id.tvErrorEndDate)
+
+        updateTravelStyleUI()
+        cardRelaxed.setOnClickListener { selectedTravelStyle = "RELAXED"; updateTravelStyleUI() }
+        cardPacked.setOnClickListener { selectedTravelStyle = "PACKED"; updateTravelStyleUI() }
 
         etBandName.addTextChangedListener(object : android.text.TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -258,15 +266,23 @@ class CreateRoomActivity : AppCompatActivity() {
         if (etBandName.text.isNullOrEmpty()) etBandName.setText("${d.name} 여행")
     }
 
-    private fun selectedThemes(): List<String> {
-        val themes = mutableListOf<String>()
-        if (findViewById<Chip>(R.id.chipActivity).isChecked) themes.add("ACTIVITY")
-        if (findViewById<Chip>(R.id.chipResort).isChecked) themes.add("RESORT")
-        if (findViewById<Chip>(R.id.chipFoodie).isChecked) themes.add("FOODIE")
-        if (findViewById<Chip>(R.id.chipShopping).isChecked) themes.add("SHOPPING")
-        if (findViewById<Chip>(R.id.chipCulture).isChecked) themes.add("CULTURE")
-        if (findViewById<Chip>(R.id.chipNature).isChecked) themes.add("NATURE")
-        return themes
+    private fun updateTravelStyleUI() {
+        val primaryColor = getColor(R.color.primary)
+        val outlineColor = getColor(R.color.outline_variant)
+        val primaryContainer = getColor(R.color.primary_container)
+        val surfaceLow = getColor(R.color.surface_container_low)
+
+        if (selectedTravelStyle == "RELAXED") {
+            cardRelaxed.strokeColor = primaryColor
+            cardRelaxed.setCardBackgroundColor(primaryContainer)
+            cardPacked.strokeColor = outlineColor
+            cardPacked.setCardBackgroundColor(surfaceLow)
+        } else {
+            cardPacked.strokeColor = primaryColor
+            cardPacked.setCardBackgroundColor(primaryContainer)
+            cardRelaxed.strokeColor = outlineColor
+            cardRelaxed.setCardBackgroundColor(surfaceLow)
+        }
     }
 
     private fun validateStep3(): Boolean {
@@ -321,17 +337,20 @@ class CreateRoomActivity : AppCompatActivity() {
             destinationLat = d.lat,
             destinationLng = d.lng,
             countryCode = d.countryCode,
-            overseas = d.overseas
+            overseas = d.overseas,
+            travelStyle = selectedTravelStyle
         )
 
-        android.util.Log.d("CreateBand", "요청: name=$name, lat=${d.lat}, lng=${d.lng}, overseas=${d.overseas}, themes=${selectedThemes()}")
+        android.util.Log.d("CreateBand", "요청: name=$name, lat=${d.lat}, lng=${d.lng}, overseas=${d.overseas}, style=$selectedTravelStyle")
 
+        val loadingOverlay = findViewById<View>(R.id.loadingOverlay)
         btnNext.isEnabled = false
-        btnNext.text = "생성 중..."
+        loadingOverlay.visibility = View.VISIBLE
 
         RetrofitClient.api.createBand(request)
             .enqueue(object : Callback<BandSummary> {
                 override fun onResponse(call: Call<BandSummary>, response: Response<BandSummary>) {
+                    loadingOverlay.visibility = View.GONE
                     if (response.isSuccessful) {
                         val body = response.body()
                         Toast.makeText(this@CreateRoomActivity, "여행 방이 생성되었습니다!", Toast.LENGTH_SHORT).show()
@@ -350,13 +369,12 @@ class CreateRoomActivity : AppCompatActivity() {
                         android.util.Log.e("CreateBand", "실패: ${response.code()} $errorBody")
                         Toast.makeText(this@CreateRoomActivity, "방 생성 실패 (${response.code()})", Toast.LENGTH_SHORT).show()
                         btnNext.isEnabled = true
-                        btnNext.text = "방 만들기"
                     }
                 }
                 override fun onFailure(call: Call<BandSummary>, t: Throwable) {
+                    loadingOverlay.visibility = View.GONE
                     Toast.makeText(this@CreateRoomActivity, "서버 연결 실패", Toast.LENGTH_SHORT).show()
                     btnNext.isEnabled = true
-                    btnNext.text = "방 만들기"
                 }
             })
     }

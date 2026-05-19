@@ -10,6 +10,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.synctrip.adapter.RoomAdapter
 import com.example.synctrip.dto.group.BandSummary
 import com.example.synctrip.dto.Room
@@ -113,15 +114,63 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    override fun onResume() {
-        super.onResume()
-        loadMyBands()
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleDeepLink(intent)
     }
 
-    private fun loadMyBands() {
+    private fun handleDeepLink(intent: Intent) {
+        val data = intent.data ?: return
+        val code = data.getQueryParameter("code") ?: return
+        if (code.isEmpty()) return
+        showJoinDialog(code)
+    }
+
+    private fun showJoinDialog(code: String) {
+        android.app.AlertDialog.Builder(this)
+            .setTitle("초대 링크로 참여")
+            .setMessage("초대 코드: $code\n이 여행 방에 참여할까요?")
+            .setPositiveButton("참여하기") { _, _ ->
+                RetrofitClient.api.joinBand(com.example.synctrip.dto.group.BandJoinRequest(code))
+                    .enqueue(object : retrofit2.Callback<com.example.synctrip.dto.group.BandSummary> {
+                        override fun onResponse(call: retrofit2.Call<com.example.synctrip.dto.group.BandSummary>, response: retrofit2.Response<com.example.synctrip.dto.group.BandSummary>) {
+                            if (response.isSuccessful) {
+                                android.widget.Toast.makeText(this@MainActivity, "여행 방에 참여했어요!", android.widget.Toast.LENGTH_SHORT).show()
+                                loadMyBands()
+                            } else {
+                                val msg = when (response.code()) {
+                                    404 -> "유효하지 않은 초대 코드예요"
+                                    409 -> "이미 참여 중인 방이에요"
+                                    410 -> "만료된 초대 코드예요. 방장한테 다시 받아보세요"
+                                    else -> "참여 실패 (${response.code()})"
+                                }
+                                android.widget.Toast.makeText(this@MainActivity, msg, android.widget.Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                        override fun onFailure(call: retrofit2.Call<com.example.synctrip.dto.group.BandSummary>, t: Throwable) {
+                            android.widget.Toast.makeText(this@MainActivity, "서버 연결 실패", android.widget.Toast.LENGTH_SHORT).show()
+                        }
+                    })
+            }
+            .setNegativeButton("취소", null)
+            .show()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        handleDeepLink(intent)
+        loadMyBands()
+        findViewById<SwipeRefreshLayout>(R.id.swipeRefresh)?.apply {
+            setColorSchemeResources(R.color.primary)
+            setOnRefreshListener { loadMyBands { isRefreshing = false } }
+        }
+    }
+
+    private fun loadMyBands(onDone: (() -> Unit)? = null) {
         RetrofitClient.api.getMyBands()
             .enqueue(object : Callback<List<BandSummary>> {
                 override fun onResponse(call: Call<List<BandSummary>>, response: Response<List<BandSummary>>) {
+                    onDone?.invoke()
                     if (response.isSuccessful) {
                         val bands = response.body() ?: emptyList()
                         roomList.clear()
@@ -155,6 +204,7 @@ class MainActivity : AppCompatActivity() {
 
                 override fun onFailure(call: Call<List<BandSummary>>, t: Throwable) {
                     android.util.Log.e("BandList", "서버 연결 실패: ${t.message}")
+                    onDone?.invoke()
                     updateEmptyView()
                 }
             })

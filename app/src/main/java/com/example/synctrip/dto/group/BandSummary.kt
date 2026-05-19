@@ -9,5 +9,8 @@ data class BandSummary(
     val inviteCode: String,
     val status: String? = null,
     val isOwner: Boolean = false,
-    val isOverseas: Boolean = false
+    val isOverseas: Boolean = false,
+    val travelStyle: String? = null,
+    val accommodationName: String? = null,
+    val memberCount: Int = 0
 )

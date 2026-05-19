@@ -8,5 +8,6 @@ data class CreateBandRequest(
     val destinationLat: Double,
     val destinationLng: Double,
     val countryCode: String?,
-    val overseas: Boolean
+    val overseas: Boolean,
+    val travelStyle: String  // "RELAXED" or "PACKED"
 )

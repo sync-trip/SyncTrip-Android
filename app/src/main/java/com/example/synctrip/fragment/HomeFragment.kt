@@ -53,9 +53,11 @@ class HomeFragment : Fragment() {
     private var maxPickCount: Int = 5
     private var currentPickCount: Int = 0
     private var myReadyState: Boolean = false
+    private var inviteShareLink: String? = null
 
     private val handler = android.os.Handler(android.os.Looper.getMainLooper())
     private var isPolling = false
+    private var isMemberPolling = false
 
     private val pickList = mutableListOf<PlacePickResponse>()
     private lateinit var placeAdapter: PlaceAdapter
@@ -116,6 +118,13 @@ class HomeFragment : Fragment() {
 
         if (bandStatus != "PLANNING") applyBandStatus(view, bandStatus)
 
+        val swipeRefresh = view.findViewById<androidx.swiperefreshlayout.widget.SwipeRefreshLayout>(R.id.swipeRefresh)
+        swipeRefresh.setColorSchemeResources(R.color.primary)
+        swipeRefresh.setOnRefreshListener {
+            loadMembers(rvMembers, view) { swipeRefresh.isRefreshing = false }
+            loadMyPicks(view)
+        }
+
         loadMembers(rvMembers, view)
         loadMyPicks(view)
     }
@@ -127,11 +136,18 @@ class HomeFragment : Fragment() {
         val rv = v.findViewById<RecyclerView>(R.id.rvMembers) ?: return
         loadMembers(rv, v)
         if (bandStatus == "GENERATING" && !isPolling) startGeneratingPoll()
+        if (bandStatus == "PLANNING" && !isMemberPolling) startMemberPoll()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        isMemberPolling = false
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         isPolling = false
+        isMemberPolling = false
         handler.removeCallbacksAndMessages(null)
     }
 
@@ -140,26 +156,34 @@ class HomeFragment : Fragment() {
         handler.postDelayed({ pollBandStatus() }, 3000L)
     }
 
+    private fun startMemberPoll() {
+        isMemberPolling = true
+        handler.postDelayed({ pollMembers() }, 5000L)
+    }
+
+    private fun pollMembers() {
+        if (!isAdded || !isMemberPolling || bandStatus != "PLANNING") return
+        val v = view ?: return
+        val rv = v.findViewById<RecyclerView>(R.id.rvMembers) ?: return
+        loadMembers(rv, v)
+        handler.postDelayed({ pollMembers() }, 5000L)
+    }
+
     private fun pollBandStatus() {
         if (!isAdded || !isPolling || bandStatus != "GENERATING") return
         RetrofitClient.api.getMyBands()
             .enqueue(object : Callback<List<BandSummary>> {
                 override fun onResponse(call: Call<List<BandSummary>>, response: Response<List<BandSummary>>) {
                     if (!isAdded || !isPolling) return
-                    val serverStatus = response.body()?.firstOrNull { it.id == bandId }?.status ?: run {
-                        handler.postDelayed({ pollBandStatus() }, 3000L)
-                        return
-                    }
-                    if (serverStatus != "GENERATING") {
-                        isPolling = false
-                        bandStatus = serverStatus
-                        arguments?.putString("BAND_STATUS", serverStatus)
-                        (activity as? SubActivity)?.updateBandStatus(serverStatus)
-                        val v = view ?: return
-                        applyBandStatus(v, serverStatus)
-                        Toast.makeText(requireContext(), "일정 생성 완료! 여행 준비가 됐어요 🎉", Toast.LENGTH_SHORT).show()
-                    } else {
-                        handler.postDelayed({ pollBandStatus() }, 3000L)
+                    val serverStatus = response.body()?.firstOrNull { it.id == bandId }?.status
+                    when {
+                        serverStatus != null && serverStatus != "GENERATING" -> {
+                            applyStatusChange(serverStatus)
+                        }
+                        else -> {
+                            // status가 null이거나 여전히 GENERATING → 일정 API로 2차 확인
+                            checkScheduleReady()
+                        }
                     }
                 }
                 override fun onFailure(call: Call<List<BandSummary>>, t: Throwable) {
@@ -168,8 +192,37 @@ class HomeFragment : Fragment() {
             })
     }
 
-    private fun loadMembers(rvMembers: RecyclerView, rootView: View) {
-        if (bandId == -1L) return
+    private fun checkScheduleReady() {
+        if (!isAdded || !isPolling) return
+        RetrofitClient.api.getSchedule(bandId)
+            .enqueue(object : Callback<com.example.synctrip.dto.schedule.ScheduleResponse> {
+                override fun onResponse(call: Call<com.example.synctrip.dto.schedule.ScheduleResponse>, response: Response<com.example.synctrip.dto.schedule.ScheduleResponse>) {
+                    if (!isAdded || !isPolling) return
+                    if (response.isSuccessful && response.body()?.days?.isNotEmpty() == true) {
+                        // 일정이 존재 = 생성 완료
+                        applyStatusChange("TRAVELLING")
+                    } else {
+                        handler.postDelayed({ pollBandStatus() }, 3000L)
+                    }
+                }
+                override fun onFailure(call: Call<com.example.synctrip.dto.schedule.ScheduleResponse>, t: Throwable) {
+                    if (isAdded && isPolling) handler.postDelayed({ pollBandStatus() }, 5000L)
+                }
+            })
+    }
+
+    private fun applyStatusChange(newStatus: String) {
+        isPolling = false
+        bandStatus = newStatus
+        arguments?.putString("BAND_STATUS", newStatus)
+        (activity as? SubActivity)?.updateBandStatus(newStatus)
+        val v = view ?: return
+        applyBandStatus(v, newStatus)
+        Toast.makeText(requireContext(), "일정 생성 완료! 여행 준비가 됐어요 🎉", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun loadMembers(rvMembers: RecyclerView, rootView: View, onDone: (() -> Unit)? = null) {
+        if (bandId == -1L) { onDone?.invoke(); return }
         RetrofitClient.api.getBandMembers(bandId)
             .enqueue(object : Callback<List<BandMemberResponse>> {
                 override fun onResponse(call: Call<List<BandMemberResponse>>, response: Response<List<BandMemberResponse>>) {
@@ -181,9 +234,11 @@ class HomeFragment : Fragment() {
                         showHostActionIfNeeded(rootView, members)
                         setupReadyButton(rootView, members)
                     }
+                    onDone?.invoke()
                 }
                 override fun onFailure(call: Call<List<BandMemberResponse>>, t: Throwable) {
                     android.util.Log.e("HomeFragment", "멤버 로드 실패: ${t.message}")
+                    onDone?.invoke()
                 }
             })
     }
@@ -215,8 +270,9 @@ class HomeFragment : Fragment() {
                     .enqueue(object : Callback<BandInviteCodeResponse> {
                         override fun onResponse(call: Call<BandInviteCodeResponse>, response: Response<BandInviteCodeResponse>) {
                             if (!isAdded) return
-                            val code = response.body()?.inviteCode ?: return
-                            tvInviteCode.text = code
+                            val body = response.body() ?: return
+                            tvInviteCode.text = body.inviteCode
+                            inviteShareLink = body.inviteShareLink
                             cardInviteCode.visibility = View.VISIBLE
                         }
                         override fun onFailure(call: Call<BandInviteCodeResponse>, t: Throwable) {
@@ -224,6 +280,18 @@ class HomeFragment : Fragment() {
                             Toast.makeText(requireContext(), "코드를 불러오지 못했어요", Toast.LENGTH_SHORT).show()
                         }
                     })
+            }
+            rootView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnShareLink)?.setOnClickListener {
+                val link = inviteShareLink
+                if (link.isNullOrEmpty()) {
+                    Toast.makeText(requireContext(), "먼저 초대코드 보기를 눌러주세요", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+                val sendIntent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+                    type = "text/plain"
+                    putExtra(android.content.Intent.EXTRA_TEXT, "SyncTrip에서 같이 여행 계획해요! 👇\n$link")
+                }
+                startActivity(android.content.Intent.createChooser(sendIntent, "초대 링크 공유"))
             }
         } else {
             cardHostAction.visibility = View.GONE
