@@ -9,6 +9,7 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.synctrip.R
 import com.example.synctrip.RetrofitClient
 import com.example.synctrip.adapter.PassportStampAdapter
@@ -29,13 +30,23 @@ class PassportFragment : Fragment() {
         val rvStamps = view.findViewById<RecyclerView>(R.id.rvStamps)
         val tvStampCount = view.findViewById<TextView>(R.id.tvStampCount)
         val layoutEmpty = view.findViewById<LinearLayout>(R.id.layoutEmpty)
+        val swipeRefresh = view.findViewById<SwipeRefreshLayout>(R.id.swipeRefresh)
 
         rvStamps.layoutManager = GridLayoutManager(requireContext(), 2)
 
+        swipeRefresh?.setColorSchemeResources(R.color.primary)
+        swipeRefresh?.setOnRefreshListener { loadStamps(rvStamps, tvStampCount, layoutEmpty, swipeRefresh) }
+
+        loadStamps(rvStamps, tvStampCount, layoutEmpty, swipeRefresh)
+    }
+
+    private fun loadStamps(rvStamps: RecyclerView, tvStampCount: TextView,
+                           layoutEmpty: LinearLayout, swipeRefresh: SwipeRefreshLayout?) {
         RetrofitClient.api.getMyBands()
             .enqueue(object : Callback<List<BandSummary>> {
                 override fun onResponse(call: Call<List<BandSummary>>, response: Response<List<BandSummary>>) {
                     if (!isAdded) return
+                    swipeRefresh?.isRefreshing = false
                     val completed = (response.body() ?: emptyList())
                         .filter { it.status == "DONE" }
 
@@ -53,6 +64,7 @@ class PassportFragment : Fragment() {
 
                 override fun onFailure(call: Call<List<BandSummary>>, t: Throwable) {
                     if (!isAdded) return
+                    swipeRefresh?.isRefreshing = false
                     rvStamps.visibility = View.GONE
                     layoutEmpty.visibility = View.VISIBLE
                 }

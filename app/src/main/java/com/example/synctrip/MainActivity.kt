@@ -10,6 +10,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.synctrip.adapter.RoomAdapter
 import com.example.synctrip.dto.group.BandSummary
 import com.example.synctrip.dto.Room
@@ -116,12 +117,17 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         loadMyBands()
+        findViewById<SwipeRefreshLayout>(R.id.swipeRefresh)?.apply {
+            setColorSchemeResources(R.color.primary)
+            setOnRefreshListener { loadMyBands { isRefreshing = false } }
+        }
     }
 
-    private fun loadMyBands() {
+    private fun loadMyBands(onDone: (() -> Unit)? = null) {
         RetrofitClient.api.getMyBands()
             .enqueue(object : Callback<List<BandSummary>> {
                 override fun onResponse(call: Call<List<BandSummary>>, response: Response<List<BandSummary>>) {
+                    onDone?.invoke()
                     if (response.isSuccessful) {
                         val bands = response.body() ?: emptyList()
                         roomList.clear()
@@ -155,6 +161,7 @@ class MainActivity : AppCompatActivity() {
 
                 override fun onFailure(call: Call<List<BandSummary>>, t: Throwable) {
                     android.util.Log.e("BandList", "서버 연결 실패: ${t.message}")
+                    onDone?.invoke()
                     updateEmptyView()
                 }
             })

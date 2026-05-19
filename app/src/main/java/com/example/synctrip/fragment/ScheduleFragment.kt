@@ -8,6 +8,7 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.synctrip.R
 import com.example.synctrip.RetrofitClient
 import com.example.synctrip.adapter.ScheduleAdapter
@@ -50,14 +51,22 @@ class ScheduleFragment : Fragment() {
             return
         }
 
-        loadSchedule(rvScheduleList, tabLayout, view.findViewById(R.id.tvScheduleEmpty))
+        val tvEmpty = view.findViewById<TextView>(R.id.tvScheduleEmpty)
+        val swipeRefresh = view.findViewById<SwipeRefreshLayout>(R.id.swipeRefresh)
+        swipeRefresh?.setColorSchemeResources(R.color.primary)
+        swipeRefresh?.setOnRefreshListener {
+            loadSchedule(rvScheduleList, tabLayout, tvEmpty) { swipeRefresh.isRefreshing = false }
+        }
+
+        loadSchedule(rvScheduleList, tabLayout, tvEmpty)
     }
 
-    private fun loadSchedule(rvScheduleList: RecyclerView, tabLayout: TabLayout, tvEmpty: TextView) {
+    private fun loadSchedule(rvScheduleList: RecyclerView, tabLayout: TabLayout, tvEmpty: TextView, onDone: (() -> Unit)? = null) {
         RetrofitClient.api.getSchedule(bandId)
             .enqueue(object : Callback<ScheduleResponse> {
                 override fun onResponse(call: Call<ScheduleResponse>, response: Response<ScheduleResponse>) {
                     if (!isAdded) return
+                    onDone?.invoke()
                     if (response.isSuccessful) {
                         val scheduleResponse = response.body() ?: return
                         val allDays = scheduleResponse.days
@@ -91,6 +100,7 @@ class ScheduleFragment : Fragment() {
                 }
                 override fun onFailure(call: Call<ScheduleResponse>, t: Throwable) {
                     if (!isAdded) return
+                    onDone?.invoke()
                     showEmpty(rvScheduleList, tvEmpty, "서버 연결 실패")
                 }
             })

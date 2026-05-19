@@ -2,8 +2,13 @@ package com.example.synctrip
 
 import android.content.Context
 import android.content.Intent
+import com.example.synctrip.dto.kakao.KakaoLoginResponse
+import com.google.gson.Gson
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Interceptor
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
@@ -35,15 +40,28 @@ object RetrofitClient {
         }
 
         val sessionInterceptor = Interceptor { chain ->
-            val response = chain.proceed(chain.request())
-            // 토큰 만료: 인증이 필요한 엔드포인트에서 401 응답 시 로그인 화면으로
+            val originalRequest = chain.request()
+            var response = chain.proceed(originalRequest)
+
             if (response.code == 401) {
-                appContext?.let { ctx ->
-                    TokenManager.clear(ctx)
-                    val intent = Intent(ctx, LoginActivity::class.java).apply {
-                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                val ctx = appContext
+                val refreshToken = if (ctx != null) TokenManager.getRefreshToken(ctx) else null
+
+                if (ctx != null && refreshToken != null) {
+                    response.close()
+                    val newTokens = tryRefreshToken(refreshToken)
+                    if (newTokens != null) {
+                        TokenManager.saveLoginResponse(ctx, newTokens.accessToken, newTokens.refreshToken,
+                            newTokens.userId, newTokens.accessTokenExpiresIn)
+                        val retryRequest = originalRequest.newBuilder()
+                            .header("Authorization", "Bearer ${newTokens.accessToken}")
+                            .build()
+                        response = chain.proceed(retryRequest)
+                    } else {
+                        redirectToLogin(ctx)
                     }
-                    ctx.startActivity(intent)
+                } else if (ctx != null) {
+                    redirectToLogin(ctx)
                 }
             }
             response
@@ -63,4 +81,31 @@ object RetrofitClient {
 
     val api: ApiService
         get() = retrofit!!.create(ApiService::class.java)
+
+    private fun tryRefreshToken(refreshToken: String): KakaoLoginResponse? {
+        return try {
+            val body = """{"refreshToken":"$refreshToken"}"""
+                .toRequestBody("application/json".toMediaType())
+            val request = Request.Builder()
+                .url("${BASE_URL}auth/kakao/refresh")
+                .post(body)
+                .build()
+            val response = OkHttpClient().newCall(request).execute()
+            if (response.isSuccessful) {
+                val json = response.body?.string() ?: return null
+                Gson().fromJson(json, KakaoLoginResponse::class.java)
+            } else null
+        } catch (e: Exception) {
+            android.util.Log.e("RetrofitClient", "토큰 재발급 실패: ${e.message}")
+            null
+        }
+    }
+
+    private fun redirectToLogin(ctx: Context) {
+        TokenManager.clear(ctx)
+        val intent = Intent(ctx, LoginActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        ctx.startActivity(intent)
+    }
 }

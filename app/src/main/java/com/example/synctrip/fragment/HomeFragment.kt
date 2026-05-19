@@ -56,6 +56,7 @@ class HomeFragment : Fragment() {
 
     private val handler = android.os.Handler(android.os.Looper.getMainLooper())
     private var isPolling = false
+    private var isMemberPolling = false
 
     private val pickList = mutableListOf<PlacePickResponse>()
     private lateinit var placeAdapter: PlaceAdapter
@@ -116,6 +117,13 @@ class HomeFragment : Fragment() {
 
         if (bandStatus != "PLANNING") applyBandStatus(view, bandStatus)
 
+        val swipeRefresh = view.findViewById<androidx.swiperefreshlayout.widget.SwipeRefreshLayout>(R.id.swipeRefresh)
+        swipeRefresh.setColorSchemeResources(R.color.primary)
+        swipeRefresh.setOnRefreshListener {
+            loadMembers(rvMembers, view) { swipeRefresh.isRefreshing = false }
+            loadMyPicks(view)
+        }
+
         loadMembers(rvMembers, view)
         loadMyPicks(view)
     }
@@ -127,17 +135,37 @@ class HomeFragment : Fragment() {
         val rv = v.findViewById<RecyclerView>(R.id.rvMembers) ?: return
         loadMembers(rv, v)
         if (bandStatus == "GENERATING" && !isPolling) startGeneratingPoll()
+        if (bandStatus == "PLANNING" && !isMemberPolling) startMemberPoll()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        isMemberPolling = false
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         isPolling = false
+        isMemberPolling = false
         handler.removeCallbacksAndMessages(null)
     }
 
     private fun startGeneratingPoll() {
         isPolling = true
         handler.postDelayed({ pollBandStatus() }, 3000L)
+    }
+
+    private fun startMemberPoll() {
+        isMemberPolling = true
+        handler.postDelayed({ pollMembers() }, 5000L)
+    }
+
+    private fun pollMembers() {
+        if (!isAdded || !isMemberPolling || bandStatus != "PLANNING") return
+        val v = view ?: return
+        val rv = v.findViewById<RecyclerView>(R.id.rvMembers) ?: return
+        loadMembers(rv, v)
+        handler.postDelayed({ pollMembers() }, 5000L)
     }
 
     private fun pollBandStatus() {
@@ -168,8 +196,8 @@ class HomeFragment : Fragment() {
             })
     }
 
-    private fun loadMembers(rvMembers: RecyclerView, rootView: View) {
-        if (bandId == -1L) return
+    private fun loadMembers(rvMembers: RecyclerView, rootView: View, onDone: (() -> Unit)? = null) {
+        if (bandId == -1L) { onDone?.invoke(); return }
         RetrofitClient.api.getBandMembers(bandId)
             .enqueue(object : Callback<List<BandMemberResponse>> {
                 override fun onResponse(call: Call<List<BandMemberResponse>>, response: Response<List<BandMemberResponse>>) {
@@ -181,9 +209,11 @@ class HomeFragment : Fragment() {
                         showHostActionIfNeeded(rootView, members)
                         setupReadyButton(rootView, members)
                     }
+                    onDone?.invoke()
                 }
                 override fun onFailure(call: Call<List<BandMemberResponse>>, t: Throwable) {
                     android.util.Log.e("HomeFragment", "멤버 로드 실패: ${t.message}")
+                    onDone?.invoke()
                 }
             })
     }
