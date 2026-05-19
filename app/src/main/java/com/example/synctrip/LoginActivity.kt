@@ -3,7 +3,10 @@ package com.example.synctrip
 import android.os.Bundle
 import android.widget.Button
 import android.widget.Toast
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import com.kakao.sdk.common.KakaoSdk
 import com.kakao.sdk.user.UserApiClient
 import com.example.synctrip.dto.kakao.KakaoLoginRequest
@@ -17,7 +20,13 @@ import com.example.synctrip.BuildConfig
 class LoginActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         setContentView(R.layout.activity_login)
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content)) { v, insets ->
+            val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(bars.left, bars.top, bars.right, bars.bottom)
+            insets
+        }
 
         // 카카오 SDK 초기화 (자동 로그인 분기 전에 항상 먼저 실행)
         KakaoMapSdk.init(this, BuildConfig.KAKAO_NATIVE_KEY)
@@ -25,7 +34,17 @@ class LoginActivity : AppCompatActivity() {
         RetrofitClient.init(this)  // ← 여기 추가
         // 자동 로그인 체크
         if (TokenManager.isLoggedIn(this)) {
-            goToMain()
+            if (TokenManager.isAccessTokenExpired(this)) {
+                // accessToken 만료 → refreshToken으로 자동 재발급
+                val refreshToken = TokenManager.getRefreshToken(this)
+                if (refreshToken != null) {
+                    refreshAndGoToMain(refreshToken)
+                } else {
+                    goToMain() // 기존 사용자 (refreshToken 없음) → 그냥 진입
+                }
+            } else {
+                goToMain()
+            }
             return
         }
 
@@ -73,8 +92,13 @@ class LoginActivity : AppCompatActivity() {
                         val userId = body?.userId
 
                         if (responseAccessToken != null && userId != null) {
-                            TokenManager.saveToken(this@LoginActivity, responseAccessToken)
-                            TokenManager.saveUserId(this@LoginActivity, userId)
+                            TokenManager.saveLoginResponse(
+                                this@LoginActivity,
+                                responseAccessToken,
+                                body?.refreshToken ?: "",
+                                userId,
+                                body?.accessTokenExpiresIn ?: 3600L
+                            )
                         }
 
                         android.util.Log.d("KakaoToken", "3. JWT 받음 완료: $responseAccessToken")
@@ -90,6 +114,32 @@ class LoginActivity : AppCompatActivity() {
                     // 3️⃣ [수정한 로그] 타임아웃 나거나 서버 문이 닫혀있을 때
                     android.util.Log.e("KakaoToken", "2. 타임아웃/서버 다운! (서버가 끝까지 대답 안 함): ${t.message}")
                     Toast.makeText(this@LoginActivity, "서버 연결 아예 실패!", Toast.LENGTH_SHORT).show()
+                }
+            })
+    }
+
+    private fun refreshAndGoToMain(refreshToken: String) {
+        RetrofitClient.api.refreshToken(com.example.synctrip.dto.kakao.TokenRefreshRequest(refreshToken))
+            .enqueue(object : Callback<KakaoLoginResponse> {
+                override fun onResponse(call: Call<KakaoLoginResponse>, response: Response<KakaoLoginResponse>) {
+                    val body = response.body()
+                    if (response.isSuccessful && body != null) {
+                        TokenManager.saveLoginResponse(
+                            this@LoginActivity,
+                            body.accessToken,
+                            body.refreshToken,
+                            body.userId,
+                            body.accessTokenExpiresIn
+                        )
+                        goToMain()
+                    } else {
+                        // 재발급 실패 → 로그인 화면 유지
+                        TokenManager.clear(this@LoginActivity)
+                    }
+                }
+                override fun onFailure(call: Call<KakaoLoginResponse>, t: Throwable) {
+                    // 네트워크 오류 → 일단 기존 토큰으로 진입 시도
+                    goToMain()
                 }
             })
     }

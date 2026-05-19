@@ -1,7 +1,11 @@
 package com.example.synctrip
 
 import android.os.Bundle
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import com.example.synctrip.fragment.HomeFragment
 import com.example.synctrip.fragment.MoneyFragment
@@ -20,7 +24,18 @@ class SubActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         setContentView(R.layout.activity_sub)
+
+        // 상태바 → Toolbar, 네비게이션바 → BottomNav에 패딩 적용
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.toolbar)) { v, insets ->
+            v.updatePadding(top = insets.getInsets(WindowInsetsCompat.Type.systemBars()).top)
+            insets
+        }
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.bottom_navigation)) { v, insets ->
+            v.updatePadding(bottom = insets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom)
+            insets
+        }
 
         val roomName = intent.getStringExtra("ROOM_NAME") ?: ""
         bandId = intent.getLongExtra("BAND_ID", -1L)
