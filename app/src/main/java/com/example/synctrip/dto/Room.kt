@@ -10,5 +10,6 @@ data class Room(
     val inviteCode: String = "",
     val startDate: String = "",
     val endDate: String = "",
-    val isOwner: Boolean = false
+    val isOwner: Boolean = false,
+    val isOverseas: Boolean = false
 )

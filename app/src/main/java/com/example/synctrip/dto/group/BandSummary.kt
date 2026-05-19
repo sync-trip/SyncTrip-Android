@@ -8,5 +8,6 @@ data class BandSummary(
     val endDate: String,
     val inviteCode: String,
     val status: String? = null,
-    val isOwner: Boolean = false
+    val isOwner: Boolean = false,
+    val isOverseas: Boolean = false
 )

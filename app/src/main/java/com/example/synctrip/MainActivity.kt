@@ -46,6 +46,7 @@ class MainActivity : AppCompatActivity() {
                 intent.putExtra("START_DATE", room.startDate)
                 intent.putExtra("END_DATE", room.endDate)
                 intent.putExtra("BAND_STATUS", room.status)
+                intent.putExtra("OVERSEAS", room.isOverseas)
                 startActivity(intent)
             },
             onOptionsClick = { room, anchor -> showRoomOptions(room, anchor) }
@@ -135,7 +136,8 @@ class MainActivity : AppCompatActivity() {
                                 inviteCode = it.inviteCode,
                                 startDate = it.startDate,
                                 endDate = it.endDate,
-                                isOwner = it.isOwner
+                                isOwner = it.isOwner,
+                                isOverseas = it.isOverseas
                             ))
                         }
                         rvRoomList.adapter?.notifyDataSetChanged()
