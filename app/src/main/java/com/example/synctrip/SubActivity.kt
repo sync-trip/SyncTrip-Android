@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.example.synctrip.fragment.HomeFragment
 import com.example.synctrip.fragment.MoneyFragment
+import com.example.synctrip.fragment.PassportFragment
 import com.example.synctrip.fragment.PhotoFragment
 import com.example.synctrip.fragment.ScheduleFragment
 import com.example.synctrip.fragment.VoteFragment
@@ -40,7 +41,7 @@ class SubActivity : AppCompatActivity() {
             when (item.itemId) {
                 R.id.tab_home     -> loadFragment(HomeFragment.newInstance(bandId, roomName, inviteCode, startDate, endDate, bandStatus))
                 R.id.tab_schedule -> loadFragment(ScheduleFragment.newInstance(bandId))
-                R.id.tab_vote     -> loadFragment(VoteFragment.newInstance(bandId))
+                R.id.tab_passport -> loadFragment(PassportFragment())
                 R.id.tab_money    -> loadFragment(MoneyFragment())
                 R.id.tab_photo    -> loadFragment(PhotoFragment())
             }
@@ -48,11 +49,26 @@ class SubActivity : AppCompatActivity() {
         }
     }
 
+    override fun onBackPressed() {
+        if (supportFragmentManager.backStackEntryCount > 0) {
+            supportFragmentManager.popBackStack()
+        } else {
+            super.onBackPressed()
+        }
+    }
+
     fun isOverseas(): Boolean = overseas
 
+    fun updateBandStatus(status: String) {
+        bandStatus = status
+    }
+
+    // 홈에서 "투표하기" 클릭 시 VoteFragment를 백스택에 올림 → 뒤로가기로 복귀
     fun switchToVoteTab() {
-        val bottomNav = findViewById<BottomNavigationView>(R.id.bottom_navigation)
-        bottomNav.selectedItemId = R.id.tab_vote
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, VoteFragment.newInstance(bandId))
+            .addToBackStack("vote")
+            .commit()
     }
 
     private fun loadFragment(fragment: Fragment) {
