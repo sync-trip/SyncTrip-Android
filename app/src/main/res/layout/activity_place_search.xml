@@ -126,25 +126,32 @@
                 android:text="맛집" />
 
             <com.google.android.material.chip.Chip
-                android:id="@+id/chipTourism"
+                android:id="@+id/chipCulture"
                 style="@style/Widget.Material3.Chip.Filter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="관광지" />
+                android:text="문화" />
 
             <com.google.android.material.chip.Chip
-                android:id="@+id/chipCafe"
+                android:id="@+id/chipActivity"
                 style="@style/Widget.Material3.Chip.Filter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="카페" />
+                android:text="액티비티" />
 
             <com.google.android.material.chip.Chip
-                android:id="@+id/chipAccom"
+                android:id="@+id/chipShopping"
                 style="@style/Widget.Material3.Chip.Filter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="숙소" />
+                android:text="쇼핑" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipNature"
+                style="@style/Widget.Material3.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="자연" />
 
         </com.google.android.material.chip.ChipGroup>
 

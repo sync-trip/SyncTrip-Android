@@ -33,7 +33,7 @@ class PlaceSearchActivity : AppCompatActivity() {
     private lateinit var loadingOverlay: android.view.View
     private var bandId: Long = -1L
     private var overseas: Boolean = false
-    private var currentCategory = "전체"
+    private var currentCategory: String? = null  // null = 전체
     private var currentPickCount = 0
     private var maxPickCount = 5
 
@@ -76,11 +76,12 @@ class PlaceSearchActivity : AppCompatActivity() {
         val chipGroup = findViewById<ChipGroup>(R.id.chipGroupCategory)
         chipGroup.setOnCheckedStateChangeListener { _, checkedIds ->
             currentCategory = when (checkedIds.firstOrNull()) {
-                R.id.chipFood    -> "맛집"
-                R.id.chipTourism -> "관광지"
-                R.id.chipCafe    -> "카페"
-                R.id.chipAccom   -> "숙소"
-                else             -> "전체"
+                R.id.chipFood     -> "FOOD"
+                R.id.chipCulture  -> "CULTURE"
+                R.id.chipActivity -> "ACTIVITY"
+                R.id.chipShopping -> "SHOPPING"
+                R.id.chipNature   -> "NATURE"
+                else              -> null
             }
             if (overseas) searchOverseasPlaces() else applyFilter()
         }
@@ -111,15 +112,9 @@ class PlaceSearchActivity : AppCompatActivity() {
 
     private fun searchOverseasPlaces() {
         if (bandId == -1L) return
-        val serverCategory = when (currentCategory) {
-            "맛집"  -> "FOOD"
-            "관광지" -> "CULTURE"
-            "카페"  -> "FOOD"
-            "숙소"  -> "ETC"
-            else   -> null
-        }
+        val keyword = findViewById<EditText>(R.id.etSearch).text.toString().trim().ifBlank { null }
         loadingOverlay.visibility = View.VISIBLE
-        RetrofitClient.api.searchOverseasPlaces(bandId, serverCategory)
+        RetrofitClient.api.searchOverseasPlaces(bandId, keyword, currentCategory)
             .enqueue(object : Callback<List<PlaceSearchResult>> {
                 override fun onResponse(call: Call<List<PlaceSearchResult>>, response: Response<List<PlaceSearchResult>>) {
                     loadingOverlay.visibility = View.GONE
@@ -155,18 +150,19 @@ class PlaceSearchActivity : AppCompatActivity() {
     private fun applyFilter() {
         filteredResults.clear()
         filteredResults.addAll(
-            if (currentCategory == "전체") allResults
-            else allResults.filter { matchesCategory(it.category_name, currentCategory) }
+            if (currentCategory == null) allResults
+            else allResults.filter { matchesCategory(it.category_name, currentCategory!!) }
         )
         adapter.notifyDataSetChanged()
     }
 
     private fun matchesCategory(categoryName: String, tab: String): Boolean = when (tab) {
-        "맛집"  -> categoryName.contains("음식") || categoryName.contains("식당") || categoryName.contains("맛집")
-        "관광지" -> categoryName.contains("관광") || categoryName.contains("문화") || categoryName.contains("박물관") || categoryName.contains("미술관")
-        "카페"  -> categoryName.contains("카페") || categoryName.contains("커피")
-        "숙소"  -> categoryName.contains("숙박") || categoryName.contains("호텔") || categoryName.contains("펜션") || categoryName.contains("게스트하우스")
-        else   -> true
+        "FOOD"     -> categoryName.contains("음식") || categoryName.contains("식당") || categoryName.contains("카페") || categoryName.contains("제과")
+        "CULTURE"  -> categoryName.contains("관광") || categoryName.contains("문화") || categoryName.contains("박물관") || categoryName.contains("미술관") || categoryName.contains("역사")
+        "ACTIVITY" -> categoryName.contains("스포츠") || categoryName.contains("레저") || categoryName.contains("오락") || categoryName.contains("테마파크")
+        "SHOPPING" -> categoryName.contains("쇼핑") || categoryName.contains("마트") || categoryName.contains("백화점") || categoryName.contains("시장")
+        "NATURE"   -> categoryName.contains("공원") || categoryName.contains("산") || categoryName.contains("해변") || categoryName.contains("자연")
+        else       -> true
     }
 
     private fun addPick(place: PlaceDocument) {
