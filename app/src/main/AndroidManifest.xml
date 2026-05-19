@@ -49,7 +49,27 @@
             android:exported="false" />
         <activity
             android:name=".MainActivity"
-            android:exported="false">
+            android:exported="true"
+            android:launchMode="singleTop">
+            <!-- 딥링크: synctrip://band/join?code=ABC123 -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="synctrip"
+                    android:host="band" />
+            </intent-filter>
+            <!-- 웹 링크: https://test.sync-trip.app/invite?code=ABC123 -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="https"
+                    android:host="test.sync-trip.app"
+                    android:pathPrefix="/invite" />
+            </intent-filter>
         </activity>
     </application>
 </manifest>

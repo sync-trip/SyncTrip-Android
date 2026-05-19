@@ -502,6 +502,19 @@
 
                     </LinearLayout>
 
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnShareLink"
+                        android:layout_width="match_parent"
+                        android:layout_height="44dp"
+                        android:layout_marginTop="10dp"
+                        android:text="🔗  링크로 초대 공유"
+                        android:textColor="@android:color/white"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        app:backgroundTint="@color/primary"
+                        app:cornerRadius="22dp"
+                        app:strokeWidth="0dp" />
+
                 </LinearLayout>
 
             </com.google.android.material.card.MaterialCardView>

@@ -30,6 +30,7 @@ class PlaceSearchActivity : AppCompatActivity() {
     private val allResults = mutableListOf<PlaceDocument>()
     private val filteredResults = mutableListOf<PlaceDocument>()
     private lateinit var adapter: PlaceSearchAdapter
+    private lateinit var loadingOverlay: android.view.View
     private var bandId: Long = -1L
     private var overseas: Boolean = false
     private var currentCategory = "전체"
@@ -49,6 +50,8 @@ class PlaceSearchActivity : AppCompatActivity() {
         bandId = intent.getLongExtra("BAND_ID", -1L)
         overseas = intent.getBooleanExtra("OVERSEAS", false)
         android.util.Log.d("PlaceSearch", "bandId=$bandId overseas=$overseas")
+
+        loadingOverlay = findViewById(R.id.loadingOverlay)
 
         val toolbar = findViewById<MaterialToolbar>(R.id.toolbar)
         toolbar.setNavigationOnClickListener { finish() }
@@ -86,9 +89,11 @@ class PlaceSearchActivity : AppCompatActivity() {
     }
 
     private fun searchPlaces(query: String) {
+        loadingOverlay.visibility = View.VISIBLE
         KakaoRetrofitClient.api.searchPlaces("KakaoAK ${BuildConfig.KAKAO_REST_KEY}", query)
             .enqueue(object : Callback<PlaceSearchResponse> {
                 override fun onResponse(call: Call<PlaceSearchResponse>, response: Response<PlaceSearchResponse>) {
+                    loadingOverlay.visibility = View.GONE
                     if (response.isSuccessful) {
                         allResults.clear()
                         allResults.addAll(response.body()?.documents ?: emptyList())
@@ -98,6 +103,7 @@ class PlaceSearchActivity : AppCompatActivity() {
                     }
                 }
                 override fun onFailure(call: Call<PlaceSearchResponse>, t: Throwable) {
+                    loadingOverlay.visibility = View.GONE
                     android.util.Log.e("PlaceSearch", "검색 실패: ${t.message}")
                 }
             })
@@ -112,9 +118,11 @@ class PlaceSearchActivity : AppCompatActivity() {
             "숙소"  -> "ETC"
             else   -> null
         }
+        loadingOverlay.visibility = View.VISIBLE
         RetrofitClient.api.searchOverseasPlaces(bandId, serverCategory)
             .enqueue(object : Callback<List<PlaceSearchResult>> {
                 override fun onResponse(call: Call<List<PlaceSearchResult>>, response: Response<List<PlaceSearchResult>>) {
+                    loadingOverlay.visibility = View.GONE
                     if (response.isSuccessful) {
                         val results = response.body() ?: emptyList()
                         allResults.clear()
@@ -126,6 +134,7 @@ class PlaceSearchActivity : AppCompatActivity() {
                     }
                 }
                 override fun onFailure(call: Call<List<PlaceSearchResult>>, t: Throwable) {
+                    loadingOverlay.visibility = View.GONE
                     android.util.Log.e("PlaceSearch", "해외 장소 검색 실패: ${t.message}")
                 }
             })

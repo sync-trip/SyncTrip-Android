@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+<LinearLayout
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -437,12 +441,12 @@
                     android:textSize="12sp"
                     android:visibility="gone" />
 
-                <!-- Themes -->
+                <!-- 여행 스타일 -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="24dp"
-                    android:text="여행 테마"
+                    android:text="여행 스타일"
                     android:textColor="@color/text_secondary"
                     android:textSize="12sp"
                     android:textAllCaps="true"
@@ -452,60 +456,115 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:text="다중 선택 가능"
+                    android:text="일정 생성에 반영돼요"
                     android:textColor="@color/text_hint"
                     android:textSize="12sp" />
 
-                <com.google.android.material.chip.ChipGroup
-                    android:id="@+id/chipGroupThemes"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    app:singleSelection="false"
-                    app:selectionRequired="false">
+                    android:orientation="horizontal"
+                    android:layout_marginTop="12dp">
 
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chipActivity"
-                        style="@style/Widget.Material3.Chip.Filter"
-                        android:layout_width="wrap_content"
+                    <!-- RELAXED 카드 -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/cardRelaxed"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:text="🏔️ 액티비티" />
+                        android:layout_weight="1"
+                        android:layout_marginEnd="6dp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        app:cardCornerRadius="14dp"
+                        app:cardElevation="0dp"
+                        app:strokeWidth="2dp"
+                        app:strokeColor="@color/outline_variant"
+                        app:cardBackgroundColor="@color/surface_container_low">
 
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chipResort"
-                        style="@style/Widget.Material3.Chip.Filter"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="🏖️ 휴양" />
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:padding="16dp">
 
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chipFoodie"
-                        style="@style/Widget.Material3.Chip.Filter"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="🍜 맛집탐방" />
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="🌴"
+                                android:textSize="28sp" />
 
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chipShopping"
-                        style="@style/Widget.Material3.Chip.Filter"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="🛍️ 쇼핑" />
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="8dp"
+                                android:text="여유롭게"
+                                android:textColor="@color/text_primary"
+                                android:textSize="15sp"
+                                android:textStyle="bold" />
 
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chipCulture"
-                        style="@style/Widget.Material3.Chip.Filter"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="🎨 문화예술" />
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:text="느긋하게 즐기는 여행"
+                                android:textColor="@color/text_secondary"
+                                android:textSize="11sp"
+                                android:gravity="center" />
 
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chipNature"
-                        style="@style/Widget.Material3.Chip.Filter"
-                        android:layout_width="wrap_content"
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- PACKED 카드 -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/cardPacked"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:text="🌿 자연탐방" />
-                </com.google.android.material.chip.ChipGroup>
+                        android:layout_weight="1"
+                        android:layout_marginStart="6dp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        app:cardCornerRadius="14dp"
+                        app:cardElevation="0dp"
+                        app:strokeWidth="2dp"
+                        app:strokeColor="@color/outline_variant"
+                        app:cardBackgroundColor="@color/surface_container_low">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:padding="16dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="⚡"
+                                android:textSize="28sp" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="8dp"
+                                android:text="알차게"
+                                android:textColor="@color/text_primary"
+                                android:textSize="15sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:text="최대한 많이 보는 여행"
+                                android:textColor="@color/text_secondary"
+                                android:textSize="11sp"
+                                android:gravity="center" />
+
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                </LinearLayout>
             </LinearLayout>
         </androidx.core.widget.NestedScrollView>
     </FrameLayout>
@@ -547,3 +606,9 @@
             app:strokeWidth="0dp" />
     </LinearLayout>
 </LinearLayout>
+
+<include layout="@layout/include_loading"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" />
+
+</FrameLayout>
