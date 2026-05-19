@@ -116,13 +116,14 @@ class MainActivity : AppCompatActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        handleDeepLink(intent)
+        setIntent(intent)
     }
 
     private fun handleDeepLink(intent: Intent) {
         val data = intent.data ?: return
         val code = data.getQueryParameter("code") ?: return
         if (code.isEmpty()) return
+        intent.data = null  // onResume 재호출 시 중복 처리 방지
         showJoinDialog(code)
     }
 
