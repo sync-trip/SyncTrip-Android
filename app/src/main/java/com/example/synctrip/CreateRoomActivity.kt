@@ -196,7 +196,7 @@ class CreateRoomActivity : AppCompatActivity() {
     private fun runLocalSearch(query: String) {
         val results = DestinationCatalog.search(query)
         if (results.isEmpty()) {
-            Toast.makeText(this, "검색 결과가 없어요. 인기 여행지에서 골라보세요.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "검색 결과가 없습니다. 인기 여행지에서 골라보세요.", Toast.LENGTH_SHORT).show()
             return
         }
         cityAdapter.submit(results)
