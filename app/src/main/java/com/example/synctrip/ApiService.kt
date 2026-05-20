@@ -50,8 +50,8 @@ interface ApiService {
     @GET("api/bands/{bandId}/places/search")
     fun searchOverseasPlaces(
         @Path("bandId") bandId: Long,
-        @Query("category") category: String? = null,
-        @Query("radiusMeters") radiusMeters: Double? = null
+        @Query("keyword") keyword: String? = null,
+        @Query("category") category: String? = null
     ): Call<List<PlaceSearchResult>>
 
     // ─── Auth ───────────────────────────────────────────────────────────────
