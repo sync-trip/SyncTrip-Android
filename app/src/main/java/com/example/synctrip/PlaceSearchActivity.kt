@@ -145,7 +145,8 @@ class PlaceSearchActivity : AppCompatActivity() {
         x = longitude.toString(),
         y = latitude.toString(),
         phone = null,
-        place_url = thumbnailUrl
+        place_url = thumbnailUrl,
+        rating = rating
     )
 
     private fun applyFilter() {

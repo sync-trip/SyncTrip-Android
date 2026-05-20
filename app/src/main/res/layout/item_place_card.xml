@@ -16,15 +16,18 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- Image placeholder -->
+        <!-- Image -->
         <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="110dp">
+            android:layout_height="130dp">
 
-            <View
+            <ImageView
+                android:id="@+id/ivThumbnail"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="@drawable/bg_place_placeholder" />
+                android:scaleType="centerCrop"
+                android:background="@drawable/bg_place_placeholder"
+                android:contentDescription="@null" />
 
             <TextView
                 android:id="@+id/tvPlaceCategory"
@@ -47,15 +50,34 @@
             android:orientation="vertical"
             android:padding="14dp">
 
-            <TextView
-                android:id="@+id/tvPlaceName"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="@color/text_primary"
-                android:textSize="15sp"
-                android:textStyle="bold"
-                android:maxLines="1"
-                android:ellipsize="end" />
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/tvPlaceName"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textColor="@color/text_primary"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
+
+                <TextView
+                    android:id="@+id/tvRating"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:textColor="#F59E0B"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:visibility="gone" />
+
+            </LinearLayout>
 
             <TextView
                 android:id="@+id/tvPlaceAddress"
