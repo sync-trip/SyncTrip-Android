@@ -5,17 +5,20 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.example.synctrip.PlaceSearchActivity
 import com.example.synctrip.R
 import com.example.synctrip.RetrofitClient
 import com.example.synctrip.SubActivity
 import com.example.synctrip.TokenManager
+import com.example.synctrip.dto.destination.DestinationCatalog
 import com.example.synctrip.adapter.MemberAdapter
 import com.example.synctrip.adapter.PlaceAdapter
 import com.example.synctrip.dto.band.BandReadyResponse
@@ -34,7 +37,7 @@ import retrofit2.Response
 class HomeFragment : Fragment() {
 
     companion object {
-        fun newInstance(bandId: Long, roomName: String, inviteCode: String, startDate: String, endDate: String, bandStatus: String = "PLANNING"): HomeFragment {
+        fun newInstance(bandId: Long, roomName: String, inviteCode: String, startDate: String, endDate: String, bandStatus: String = "PLANNING", destination: String = ""): HomeFragment {
             return HomeFragment().apply {
                 arguments = Bundle().apply {
                     putLong("BAND_ID", bandId)
@@ -43,6 +46,7 @@ class HomeFragment : Fragment() {
                     putString("START_DATE", startDate)
                     putString("END_DATE", endDate)
                     putString("BAND_STATUS", bandStatus)
+                    putString("DESTINATION", destination)
                 }
             }
         }
@@ -80,6 +84,15 @@ class HomeFragment : Fragment() {
             val s = startDate.replace("-", ". ")
             val e = endDate.replace("-", ". ")
             view.findViewById<TextView>(R.id.tvTripDate).text = "$s - $e"
+        }
+
+        val destination = arguments?.getString("DESTINATION") ?: ""
+        val thumbUrl = DestinationCatalog.ALL.firstOrNull { destination.contains(it.name) }?.thumbnailUrl
+        if (!thumbUrl.isNullOrEmpty()) {
+            Glide.with(this)
+                .load(thumbUrl)
+                .centerCrop()
+                .into(view.findViewById<ImageView>(R.id.ivHeroBackground))
         }
 
         // 멤버 RecyclerView

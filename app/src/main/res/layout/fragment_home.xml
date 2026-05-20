@@ -29,11 +29,22 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent">
 
-                    <!-- Gradient background -->
-                    <View
+                    <!-- Destination photo -->
+                    <ImageView
+                        android:id="@+id/ivHeroBackground"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:background="@drawable/bg_hero_gradient" />
+                        android:scaleType="centerCrop"
+                        android:background="@drawable/bg_hero_gradient"
+                        android:contentDescription="@null" />
+
+                    <!-- Gradient background (fallback) -->
+                    <View
+                        android:id="@+id/viewHeroGradient"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/bg_hero_gradient"
+                        android:visibility="gone" />
 
                     <!-- Dark scrim overlay -->
                     <View

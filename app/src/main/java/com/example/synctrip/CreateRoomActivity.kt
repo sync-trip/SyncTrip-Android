@@ -196,7 +196,7 @@ class CreateRoomActivity : AppCompatActivity() {
     private fun runLocalSearch(query: String) {
         val results = DestinationCatalog.search(query)
         if (results.isEmpty()) {
-            Toast.makeText(this, "검색 결과가 없습니다. 인기 여행지에서 골라보세요.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "아직 준비 중인 여행지예요. 목록에서 선택해주세요.", Toast.LENGTH_SHORT).show()
             return
         }
         cityAdapter.submit(results)
@@ -350,6 +350,7 @@ class CreateRoomActivity : AppCompatActivity() {
                         intent.putExtra("END_DATE", body?.endDate ?: endDate)
                         intent.putExtra("BAND_STATUS", body?.status ?: "PLANNING")
                         intent.putExtra("OVERSEAS", d.overseas)
+                        intent.putExtra("DESTINATION", "${d.country} ${d.name}")
                         startActivity(intent)
                         finish()
                     } else {

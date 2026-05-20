@@ -50,6 +50,7 @@ class MainActivity : AppCompatActivity() {
                 intent.putExtra("END_DATE", room.endDate)
                 intent.putExtra("BAND_STATUS", room.status)
                 intent.putExtra("OVERSEAS", room.isOverseas)
+                intent.putExtra("DESTINATION", room.city)
                 startActivity(intent)
             },
             onOptionsClick = { room, anchor -> showRoomOptions(room, anchor) }
