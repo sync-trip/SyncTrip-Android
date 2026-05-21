@@ -39,6 +39,7 @@ class PlaceSearchActivity : AppCompatActivity() {
     private var currentPickCount = 0
     private var maxPickCount = 5
     private val pickedExternalIds = mutableSetOf<String>()
+    private var isSearching = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -115,12 +116,15 @@ class PlaceSearchActivity : AppCompatActivity() {
 
     private fun searchOverseasPlaces() {
         if (bandId == -1L) return
+        if (isSearching) return
         val keyword = findViewById<EditText>(R.id.etSearch).text.toString().trim().ifBlank { null }
         if (keyword == null) return
+        isSearching = true
         loadingOverlay.visibility = View.VISIBLE
         RetrofitClient.api.searchOverseasPlaces(bandId, keyword, currentCategory)
             .enqueue(object : Callback<List<PlaceSearchResult>> {
                 override fun onResponse(call: Call<List<PlaceSearchResult>>, response: Response<List<PlaceSearchResult>>) {
+                    isSearching = false
                     loadingOverlay.visibility = View.GONE
                     if (response.isSuccessful) {
                         val results = response.body() ?: emptyList()
@@ -133,6 +137,7 @@ class PlaceSearchActivity : AppCompatActivity() {
                     }
                 }
                 override fun onFailure(call: Call<List<PlaceSearchResult>>, t: Throwable) {
+                    isSearching = false
                     loadingOverlay.visibility = View.GONE
                     android.util.Log.e("PlaceSearch", "해외 장소 검색 실패: ${t.message}")
                 }
@@ -185,9 +190,11 @@ class PlaceSearchActivity : AppCompatActivity() {
             externalId = place.id,
             name = place.place_name,
             category = if (overseas) place.category_name else kakaoToCategory(place.category_name),
-            latitude = place.y.toDouble(),
-            longitude = place.x.toDouble(),
-            address = place.road_address_name.ifEmpty { place.address_name }
+            latitude = place.y.toDoubleOrNull() ?: 0.0,
+            longitude = place.x.toDoubleOrNull() ?: 0.0,
+            address = place.road_address_name.ifEmpty { place.address_name },
+            rating = place.rating,
+            thumbnailUrl = if (overseas) place.place_url?.takeIf { it.isNotBlank() } else null
         )
         RetrofitClient.api.addPick(bandId, request)
             .enqueue(object : Callback<PlacePickResponse> {

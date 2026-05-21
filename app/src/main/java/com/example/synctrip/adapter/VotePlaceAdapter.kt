@@ -3,9 +3,11 @@ package com.example.synctrip.adapter
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.example.synctrip.R
 import com.example.synctrip.dto.vote.VotePlaceResponse
 import com.google.android.material.button.MaterialButton
@@ -17,6 +19,7 @@ class VotePlaceAdapter(
 ) : RecyclerView.Adapter<VotePlaceAdapter.VH>() {
 
     inner class VH(view: View) : RecyclerView.ViewHolder(view) {
+        val ivThumbnail: ImageView = view.findViewById(R.id.ivVoteThumbnail)
         val tvName: TextView = view.findViewById(R.id.tvVotePlaceName)
         val tvCategory: TextView = view.findViewById(R.id.tvVoteCategory)
         val tvRating: TextView = view.findViewById(R.id.tvVoteRating)
@@ -37,9 +40,27 @@ class VotePlaceAdapter(
 
         holder.tvName.text = place.name
         holder.tvCategory.text = categoryLabel(place.category)
-        holder.tvRating.text = if (place.rating != null) "⭐ ${"%.1f".format(place.rating)}" else "⭐ -"
         holder.tvAddress.text = "📍 ${place.address}"
         holder.tvMyBookmark.visibility = if (place.myBookmark) View.VISIBLE else View.GONE
+
+        if (place.rating != null) {
+            holder.tvRating.text = "⭐ ${"%.1f".format(place.rating)}"
+            holder.tvRating.visibility = View.VISIBLE
+        } else {
+            holder.tvRating.visibility = View.GONE
+        }
+
+        if (!place.thumbnailUrl.isNullOrBlank()) {
+            holder.ivThumbnail.visibility = View.VISIBLE
+            Glide.with(holder.ivThumbnail)
+                .load(place.thumbnailUrl)
+                .placeholder(R.drawable.bg_place_placeholder)
+                .error(R.drawable.bg_place_placeholder)
+                .centerCrop()
+                .into(holder.ivThumbnail)
+        } else {
+            holder.ivThumbnail.visibility = View.GONE
+        }
 
         applyVoteState(holder, voted)
 
