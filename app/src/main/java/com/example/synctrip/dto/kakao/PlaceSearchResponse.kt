@@ -5,11 +5,14 @@ data class PlaceSearchResponse(
 )
 
 data class PlaceDocument(
+    val id: String,
     val place_name: String,
     val category_name: String,
     val address_name: String,
     val road_address_name: String,
-    val x: String,  // 경도
-    val y: String,  // 위도
-    val phone: String?
+    val x: String,
+    val y: String,
+    val phone: String?,
+    val place_url: String?,
+    val rating: Float? = null
 )

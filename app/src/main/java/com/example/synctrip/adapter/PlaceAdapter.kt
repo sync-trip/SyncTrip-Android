@@ -6,10 +6,11 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.synctrip.R
-import com.example.synctrip.dto.Place
+import com.example.synctrip.dto.group.PlacePickResponse
 
 class PlaceAdapter(
-    private val placeList: MutableList<Place>
+    private val placeList: MutableList<PlacePickResponse>,
+    private val onDelete: (PlacePickResponse, Int) -> Unit
 ) : RecyclerView.Adapter<PlaceAdapter.PlaceViewHolder>() {
 
     class PlaceViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -27,15 +28,27 @@ class PlaceAdapter(
     override fun onBindViewHolder(holder: PlaceViewHolder, position: Int) {
         val place = placeList[position]
         holder.tvPlaceName.text = place.name
-        holder.tvCategory.text = place.category
+        holder.tvCategory.text = categoryLabel(place.category)
 
-        // 삭제 버튼
         holder.tvDelete.setOnClickListener {
-            placeList.removeAt(position)
-            notifyItemRemoved(position)
-            notifyItemRangeChanged(position, placeList.size)
+            onDelete(place, position)
         }
     }
 
     override fun getItemCount(): Int = placeList.size
+
+    fun removeAt(position: Int) {
+        placeList.removeAt(position)
+        notifyItemRemoved(position)
+        notifyItemRangeChanged(position, placeList.size)
+    }
+
+    private fun categoryLabel(category: String): String = when (category) {
+        "FOOD" -> "음식"
+        "CULTURE" -> "문화"
+        "ACTIVITY" -> "액티비티"
+        "SHOPPING" -> "쇼핑"
+        "NATURE" -> "자연"
+        else -> "기타"
+    }
 }

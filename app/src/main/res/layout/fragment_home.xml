@@ -1,192 +1,537 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
+<androidx.swiperefreshlayout.widget.SwipeRefreshLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/swipeRefresh"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/background">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="16dp">
+        android:layout_height="match_parent">
 
-        <!-- 여행 제목 -->
-        <TextView
-            android:id="@+id/tvTripTitle"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="🏖️ 제주도 여행"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
+            android:orientation="vertical"
+            android:paddingBottom="100dp">
 
-        <!-- 여행 날짜 -->
-        <TextView
-            android:id="@+id/tvTripDate"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="📅 2026.05.01 ~ 05.03 (3일)"
-            android:textSize="14sp"
-            android:textColor="#888888"
-            android:layout_marginTop="8dp"
-            app:layout_constraintTop_toBottomOf="@id/tvTripTitle"
-            app:layout_constraintStart_toStartOf="parent" />
+            <!-- Hero Section -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="300dp"
+                app:cardElevation="4dp"
+                app:strokeWidth="0dp"
+                app:shapeAppearance="@style/HeroShapeAppearance">
 
-        <!-- 멤버 수 -->
-        <TextView
-            android:id="@+id/tvMemberCount"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="👥 멤버 4명"
-            android:textSize="14sp"
-            android:textColor="#888888"
-            android:layout_marginTop="4dp"
-            app:layout_constraintTop_toBottomOf="@id/tvTripDate"
-            app:layout_constraintStart_toStartOf="parent" />
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
 
-        <!-- 초대 코드 -->
-        <androidx.cardview.widget.CardView
-            android:id="@+id/cardInviteCode"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            app:cardCornerRadius="8dp"
-            app:cardElevation="2dp"
-            app:layout_constraintTop_toBottomOf="@id/tvMemberCount"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
+                    <!-- Destination photo -->
+                    <ImageView
+                        android:id="@+id/ivHeroBackground"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scaleType="centerCrop"
+                        android:background="@drawable/bg_hero_gradient"
+                        android:contentDescription="@null" />
 
+                    <!-- Gradient background (fallback) -->
+                    <View
+                        android:id="@+id/viewHeroGradient"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/bg_hero_gradient"
+                        android:visibility="gone" />
+
+                    <!-- Dark scrim overlay -->
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/bg_hero_scrim" />
+
+                    <!-- Content (bottom-aligned) -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:gravity="bottom"
+                        android:padding="20dp">
+
+                        <!-- Status badge -->
+                        <TextView
+                            android:id="@+id/tvStatusBadge"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/bg_status_badge"
+                            android:paddingHorizontal="12dp"
+                            android:paddingVertical="5dp"
+                            android:text="⏳  여행 대기 중"
+                            android:textColor="@android:color/white"
+                            android:textSize="12sp"
+                            android:textAllCaps="true"
+                            android:letterSpacing="0.06" />
+
+                        <!-- Trip title -->
+                        <TextView
+                            android:id="@+id/tvTripTitle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="목적지"
+                            android:textColor="@android:color/white"
+                            android:textSize="36sp"
+                            android:textStyle="bold"
+                            android:letterSpacing="-0.02"
+                            android:shadowColor="#80000000"
+                            android:shadowDx="0"
+                            android:shadowDy="2"
+                            android:shadowRadius="4" />
+
+                        <!-- Date row -->
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:layout_marginTop="6dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="📅  "
+                                android:textSize="14sp" />
+
+                            <TextView
+                                android:id="@+id/tvTripDate"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="날짜 미정"
+                                android:textColor="#CCE5FF"
+                                android:textSize="14sp" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                </FrameLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Member Section -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingTop="24dp"
+                android:paddingBottom="8dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="20dp"
+                    android:layout_marginBottom="14dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="함께하는 친구들"
+                        android:textColor="@color/text_primary"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvMemberCountBadge"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_tag_chip"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="4dp"
+                        android:text="👥 0 명"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="12sp" />
+
+                </LinearLayout>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvMembers"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:clipToPadding="false"
+                    android:paddingHorizontal="20dp"
+                    android:nestedScrollingEnabled="false" />
+
+            </LinearLayout>
+
+            <!-- Bento Grid -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:padding="12dp"
-                android:gravity="center_vertical">
+                android:paddingHorizontal="20dp"
+                android:paddingTop="8dp"
+                android:paddingBottom="16dp">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="초대 코드"
-                    android:textSize="14sp"
-                    android:textColor="#888888" />
-
-                <!-- 초대 코드 -->
-                <TextView
-                    android:id="@+id/tvInviteCode"
+                <!-- Progress card -->
+                <com.google.android.material.card.MaterialCardView
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:text="ABC123"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:gravity="center"
-                    android:textColor="#4CAF50" />
+                    android:layout_marginEnd="6dp"
+                    app:cardBackgroundColor="@color/surface_container_low"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="0dp"
+                    app:strokeColor="@color/outline_variant"
+                    app:strokeWidth="0.5dp">
 
-                <!-- 복사 버튼 -->
-                <Button
-                    android:id="@+id/btnCopyCode"
-                    android:layout_width="wrap_content"
-                    android:layout_height="36dp"
-                    android:text="복사"
-                    android:textSize="12sp"
-                    android:backgroundTint="#4CAF50" />
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:layout_marginBottom="16dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:background="@drawable/bg_tag_chip"
+                                android:padding="6dp"
+                                android:text="✅"
+                                android:textSize="14sp" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="8dp"
+                                android:text="준비 현황"
+                                android:textColor="@color/text_secondary"
+                                android:textSize="12sp" />
+
+                        </LinearLayout>
+
+                        <TextView
+                            android:id="@+id/tvProgressText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="0 / 5 장소"
+                            android:textColor="@color/text_primary"
+                            android:textSize="20sp"
+                            android:textStyle="bold"
+                            android:layout_marginBottom="8dp" />
+
+                        <ProgressBar
+                            android:id="@+id/progressPicks"
+                            style="?android:attr/progressBarStyleHorizontal"
+                            android:layout_width="match_parent"
+                            android:layout_height="6dp"
+                            android:max="5"
+                            android:progress="0"
+                            android:progressTint="@color/primary"
+                            android:progressBackgroundTint="@color/surface_container_high" />
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Current step card -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:layout_marginStart="6dp"
+                    app:cardBackgroundColor="@color/surface_container_low"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="0dp"
+                    app:strokeColor="@color/outline_variant"
+                    app:strokeWidth="0.5dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:layout_marginBottom="16dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:background="@drawable/bg_tag_chip"
+                                android:padding="6dp"
+                                android:text="🗳️"
+                                android:textSize="14sp" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="8dp"
+                                android:text="현재 단계"
+                                android:textColor="@color/text_secondary"
+                                android:textSize="12sp" />
+
+                        </LinearLayout>
+
+                        <TextView
+                            android:id="@+id/tvCurrentStep"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="장소 담기"
+                            android:textColor="@color/text_primary"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+
+                        <LinearLayout
+                            android:id="@+id/layoutParticipate"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:layout_marginTop="6dp"
+                            android:clickable="true"
+                            android:focusable="true">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="참여하기"
+                                android:textColor="@color/primary"
+                                android:textSize="12sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text=" →"
+                                android:textColor="@color/primary"
+                                android:textSize="12sp" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
 
             </LinearLayout>
 
-        </androidx.cardview.widget.CardView>
+            <!-- Ready card (non-host, PLANNING only) -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardReady"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="20dp"
+                android:layout_marginBottom="8dp"
+                android:visibility="gone"
+                app:cardBackgroundColor="@color/surface_container_low"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp"
+                app:strokeColor="@color/outline_variant"
+                app:strokeWidth="0.5dp">
 
-        <!-- 구분선 -->
-        <View
-            android:id="@+id/divider1"
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="#EEEEEE"
-            android:layout_marginTop="16dp"
-            app:layout_constraintTop_toBottomOf="@id/cardInviteCode" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
 
-        <!-- 장소 담기 버튼 -->
-        <Button
-            android:id="@+id/btnAddPlace"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="8dp"
-            android:text="📍 장소 담기"
-            android:backgroundTint="#4CAF50"
-            app:layout_constraintTop_toBottomOf="@id/divider1"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/btnStartVote" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="내 준비 상태"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="12sp"
+                        android:layout_marginBottom="10dp" />
 
-        <!-- 투표 시작 버튼 -->
-        <Button
-            android:id="@+id/btnStartVote"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="🗳️ 투표 시작"
-            android:backgroundTint="#2196F3"
-            app:layout_constraintTop_toBottomOf="@id/divider1"
-            app:layout_constraintStart_toEndOf="@id/btnAddPlace"
-            app:layout_constraintEnd_toEndOf="parent" />
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnReady"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:text="준비 완료"
+                        android:textColor="@android:color/white"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        app:backgroundTint="@color/primary"
+                        app:cornerRadius="24dp"
+                        app:strokeWidth="0dp" />
 
-        <!-- 내가 담은 장소 제목 -->
-        <TextView
-            android:id="@+id/tvMyPlaceTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="📍 내가 담은 장소 (0/5)"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:layout_marginTop="24dp"
-            app:layout_constraintTop_toBottomOf="@id/btnAddPlace"
-            app:layout_constraintStart_toStartOf="parent" />
+                </LinearLayout>
 
-        <!-- 담은 장소 목록 -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rvMyPlaces"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:nestedScrollingEnabled="false"
-            app:layout_constraintTop_toBottomOf="@id/tvMyPlaceTitle"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            </com.google.android.material.card.MaterialCardView>
 
-        <!-- 구분선 2 -->
-        <View
-            android:id="@+id/divider2"
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="#EEEEEE"
-            android:layout_marginTop="16dp"
-            app:layout_constraintTop_toBottomOf="@id/rvMyPlaces" />
+            <!-- Host action card (hidden by default) -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardHostAction"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="20dp"
+                android:layout_marginBottom="8dp"
+                android:visibility="gone"
+                app:cardBackgroundColor="@color/primary_container"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="0dp">
 
-        <!-- 그룹 상태 표시 -->
-        <TextView
-            android:id="@+id/tvGroupStatus"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="📋 현재 상태: 장소 담기 중"
-            android:textSize="14sp"
-            android:textColor="#888888"
-            android:layout_marginTop="16dp"
-            app:layout_constraintTop_toBottomOf="@id/divider2"
-            app:layout_constraintStart_toStartOf="parent" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
 
-        <!-- 일정 생성하기 버튼 (투표 완료 후 활성화) -->
-        <Button
-            android:id="@+id/btnGenerateSchedule"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:text="✨ 일정 생성하기"
-            android:textSize="16sp"
-            android:backgroundTint="#9E9E9E"
-            android:enabled="false"
-            app:layout_constraintTop_toBottomOf="@id/tvGroupStatus"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="방장 전용"
+                        android:textColor="@color/on_primary_container"
+                        android:textSize="12sp"
+                        android:layout_marginBottom="8dp" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
-</ScrollView>
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnAdvanceStatus"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:text="투표 시작하기 →"
+                        android:textColor="@android:color/white"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        app:backgroundTint="@color/primary"
+                        app:cornerRadius="24dp"
+                        app:strokeWidth="0dp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnInviteHost"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="44dp"
+                        android:layout_marginTop="8dp"
+                        android:text="🔗  초대코드 보기"
+                        android:textSize="14sp"
+                        app:strokeColor="@color/primary"
+                        app:strokeWidth="1dp"
+                        app:cornerRadius="22dp" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- 내가 담은 장소 섹션 -->
+            <LinearLayout
+                android:id="@+id/layoutPicks"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingHorizontal="20dp"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="내가 담은 장소"
+                    android:textColor="@color/text_primary"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="10dp" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvPicks"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="false" />
+
+            </LinearLayout>
+
+            <!-- Invite code card (hidden by default) -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardInviteCode"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="20dp"
+                android:layout_marginBottom="8dp"
+                android:visibility="gone"
+                app:cardBackgroundColor="@color/surface_lowest"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:strokeColor="@color/outline_variant"
+                app:strokeWidth="0.5dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="초대 코드"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="12sp"
+                        android:layout_marginBottom="8dp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:id="@+id/tvInviteCode"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:textColor="@color/primary"
+                            android:textSize="22sp"
+                            android:textStyle="bold"
+                            android:letterSpacing="0.1" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnCopyCode"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="36dp"
+                            android:paddingHorizontal="16dp"
+                            android:text="복사"
+                            android:textSize="13sp"
+                            app:strokeColor="@color/primary"
+                            app:strokeWidth="1dp" />
+
+                    </LinearLayout>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnShareLink"
+                        android:layout_width="match_parent"
+                        android:layout_height="44dp"
+                        android:layout_marginTop="10dp"
+                        android:text="🔗  링크로 초대 공유"
+                        android:textColor="@android:color/white"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        app:backgroundTint="@color/primary"
+                        app:cornerRadius="22dp"
+                        app:strokeWidth="0dp" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+</androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

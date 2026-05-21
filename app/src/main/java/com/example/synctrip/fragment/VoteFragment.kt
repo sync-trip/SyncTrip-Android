@@ -4,85 +4,178 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.synctrip.R
-import com.example.synctrip.dto.Place
+import com.example.synctrip.RetrofitClient
+import com.example.synctrip.TokenManager
+import com.example.synctrip.VoteStompClient
+import com.example.synctrip.adapter.VotePlaceAdapter
+import com.example.synctrip.dto.vote.VotePlaceResponse
+import com.example.synctrip.dto.vote.VoteRequest
+import com.example.synctrip.dto.vote.VoteResponse
+import com.example.synctrip.dto.vote.VoteStatusResponse
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class VoteFragment : Fragment() {
 
-    // 임시 투표 장소 목록 (나중에 서버에서 받아올 것)
-    private val placeList = mutableListOf(
-        Place("경복궁", "문화"),
-        Place("남산타워", "관광"),
-        Place("명동", "쇼핑"),
-        Place("한강공원", "자연"),
-        Place("롯데월드", "액티비티")
-    )
+    private var bandId: Long = -1L
+    private val places = mutableListOf<VotePlaceResponse>()
+    private val votedMap = mutableMapOf<Long, Int>()
+    private lateinit var adapter: VotePlaceAdapter
+    private var stompClient: VoteStompClient? = null
 
-    private var currentIndex = 0
+    companion object {
+        fun newInstance(bandId: Long): VoteFragment {
+            return VoteFragment().apply {
+                arguments = Bundle().apply { putLong("BAND_ID", bandId) }
+            }
+        }
+    }
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_vote, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val tvVoteCount = view.findViewById<TextView>(R.id.tvVoteCount)
-        val tvPlaceName = view.findViewById<TextView>(R.id.tvVotePlaceName)
-        val tvCategory = view.findViewById<TextView>(R.id.tvVoteCategory)
-        val btnLike = view.findViewById<Button>(R.id.btnLike)
-        val btnDislike = view.findViewById<Button>(R.id.btnDislike)
+        bandId = arguments?.getLong("BAND_ID") ?: -1L
 
-        // 첫 번째 장소 표시
-        showPlace(tvVoteCount, tvPlaceName, tvCategory)
+        val tvTimer = view.findViewById<TextView>(R.id.tvVoteTimer)
+        val rv = view.findViewById<RecyclerView>(R.id.rvVoteOptions)
 
-        // 좋아요 버튼
-        btnLike.setOnClickListener {
-            Toast.makeText(requireContext(), "👍 좋아요!", Toast.LENGTH_SHORT).show()
-            nextPlace(tvVoteCount, tvPlaceName, tvCategory)
+        rv.layoutManager = LinearLayoutManager(requireContext())
+        adapter = VotePlaceAdapter(places, votedMap) { placeId, result ->
+            submitVote(placeId, result, tvTimer)
+        }
+        rv.adapter = adapter
+
+        if (bandId == -1L) {
+            tvTimer.text = "밴드 정보를 불러올 수 없어요"
+            return
         }
 
-        // 싫어요 버튼
-        btnDislike.setOnClickListener {
-            Toast.makeText(requireContext(), "❌ 싫어요!", Toast.LENGTH_SHORT).show()
-            nextPlace(tvVoteCount, tvPlaceName, tvCategory)
+        loadVotePlaces(tvTimer)
+        connectWebSocket()
+
+        view.findViewById<SwipeRefreshLayout>(R.id.swipeRefresh)?.apply {
+            setColorSchemeResources(R.color.primary)
+            setOnRefreshListener {
+                places.clear()
+                votedMap.clear()
+                adapter.notifyDataSetChanged()
+                loadVotePlaces(tvTimer)
+                isRefreshing = false
+            }
         }
     }
 
-    // 현재 장소 표시
-    private fun showPlace(
-        tvVoteCount: TextView,
-        tvPlaceName: TextView,
-        tvCategory: TextView
-    ) {
-        val place = placeList[currentIndex]
-        tvPlaceName.text = place.name
-        tvCategory.text = place.category
-        tvVoteCount.text = "남은 장소: ${placeList.size - currentIndex}개"
+    private fun loadVotePlaces(tvTimer: TextView) {
+        tvTimer.text = "장소 목록 불러오는 중..."
+
+        RetrofitClient.api.getVotePlaces(bandId)
+            .enqueue(object : Callback<List<VotePlaceResponse>> {
+                override fun onResponse(call: Call<List<VotePlaceResponse>>, response: Response<List<VotePlaceResponse>>) {
+                    if (!isAdded) return
+                    if (response.isSuccessful) {
+                        places.clear()
+                        places.addAll(response.body() ?: emptyList())
+
+                        // 내가 담은 장소 → UI 자동 좋아요 + 서버에도 투표 전송
+                        places.filter { it.myBookmark }.forEach { place ->
+                            votedMap[place.placeId] = 1
+                            autoLike(place.placeId)
+                        }
+
+                        adapter.notifyDataSetChanged()
+                        loadMyVoteStatus(tvTimer)
+                    } else when (response.code()) {
+                        403 -> tvTimer.text = "⏳ 아직 투표 단계가 아니에요. 방장이 '투표 시작하기'를 눌러야 해요."
+                        404 -> tvTimer.text = "밴드 정보를 찾을 수 없어요."
+                        else -> tvTimer.text = "장소 목록 로드 실패 (${response.code()})"
+                    }
+                }
+                override fun onFailure(call: Call<List<VotePlaceResponse>>, t: Throwable) {
+                    if (!isAdded) return
+                    tvTimer.text = "서버 연결 실패"
+                }
+            })
     }
 
-    // 다음 장소로 이동
-    private fun nextPlace(
-        tvVoteCount: TextView,
-        tvPlaceName: TextView,
-        tvCategory: TextView
-    ) {
-        currentIndex++
-        if (currentIndex < placeList.size) {
-            showPlace(tvVoteCount, tvPlaceName, tvCategory)
-        } else {
-            // 모든 장소 투표 완료
-            tvPlaceName.text = "투표 완료!"
-            tvCategory.text = ""
-            tvVoteCount.text = "남은 장소: 0개"
-            Toast.makeText(requireContext(), "🎉 모든 장소 투표 완료!", Toast.LENGTH_SHORT).show()
-        }
+    private fun loadMyVoteStatus(tvTimer: TextView) {
+        RetrofitClient.api.getMyVoteStatus(bandId)
+            .enqueue(object : Callback<VoteStatusResponse> {
+                override fun onResponse(call: Call<VoteStatusResponse>, response: Response<VoteStatusResponse>) {
+                    if (!isAdded) return
+                    val status = response.body() ?: return
+                    updateProgressText(tvTimer, status.myVotedCount, status.totalPlaces)
+                }
+                override fun onFailure(call: Call<VoteStatusResponse>, t: Throwable) {}
+            })
+    }
+
+    private fun submitVote(placeId: Long, result: Int, tvTimer: TextView) {
+        RetrofitClient.api.vote(bandId, VoteRequest(placeId, result))
+            .enqueue(object : Callback<VoteResponse> {
+                override fun onResponse(call: Call<VoteResponse>, response: Response<VoteResponse>) {
+                    if (!isAdded) return
+                    if (response.isSuccessful) {
+                        votedMap[placeId] = result
+                        adapter.notifyVoted(placeId)
+                        val voted = votedMap.size
+                        val total = places.size
+                        updateProgressText(tvTimer, voted, total)
+                    } else {
+                        Toast.makeText(requireContext(), "투표 실패 (${response.code()})", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                override fun onFailure(call: Call<VoteResponse>, t: Throwable) {
+                    if (!isAdded) return
+                    Toast.makeText(requireContext(), "서버 연결 실패", Toast.LENGTH_SHORT).show()
+                }
+            })
+    }
+
+    private fun updateProgressText(tvTimer: TextView, voted: Int, total: Int) {
+        tvTimer.text = if (voted >= total && total > 0) "✅  투표 완료! ($voted/$total)" else "내 투표: $voted / $total 장소"
+    }
+
+    private fun autoLike(placeId: Long) {
+        RetrofitClient.api.vote(bandId, VoteRequest(placeId, 1))
+            .enqueue(object : Callback<VoteResponse> {
+                override fun onResponse(call: Call<VoteResponse>, response: Response<VoteResponse>) {}
+                override fun onFailure(call: Call<VoteResponse>, t: Throwable) {}
+            })
+    }
+
+    private fun connectWebSocket() {
+        val ctx = context ?: return
+        val token = TokenManager.getToken(ctx) ?: return
+        stompClient = VoteStompClient(
+            token = token,
+            bandId = bandId,
+            onEvent = { event ->
+                // UI 업데이트는 메인 스레드에서
+                activity?.runOnUiThread {
+                    if (!isAdded) return@runOnUiThread
+                    val tvTimer = view?.findViewById<TextView>(R.id.tvVoteTimer) ?: return@runOnUiThread
+                    updateProgressText(tvTimer, event.myVotedCount, event.totalPlaces)
+                }
+            }
+        )
+        stompClient?.connect()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        stompClient?.disconnect()
+        stompClient = null
     }
 }
