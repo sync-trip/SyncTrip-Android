@@ -38,6 +38,7 @@ class PlaceSearchActivity : AppCompatActivity() {
     private var currentCategory: String? = null
     private var currentPickCount = 0
     private var maxPickCount = 5
+    private val pickedExternalIds = mutableSetOf<String>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -171,6 +172,10 @@ class PlaceSearchActivity : AppCompatActivity() {
 
     private fun addPick(place: PlaceDocument) {
         if (bandId == -1L) return
+        if (pickedExternalIds.contains(place.id)) {
+            android.widget.Toast.makeText(this, "이미 담은 장소예요", android.widget.Toast.LENGTH_SHORT).show()
+            return
+        }
         if (currentPickCount >= maxPickCount) {
             android.widget.Toast.makeText(this, "장소를 ${maxPickCount}개 모두 담았어요!\n더 담으려면 홈에서 기존 장소를 삭제해주세요.", android.widget.Toast.LENGTH_LONG).show()
             return
@@ -190,6 +195,7 @@ class PlaceSearchActivity : AppCompatActivity() {
                     when {
                         response.isSuccessful -> {
                             android.widget.Toast.makeText(this@PlaceSearchActivity, "${place.place_name} 담았어요!", android.widget.Toast.LENGTH_SHORT).show()
+                            pickedExternalIds.add(place.id)
                             currentPickCount++
                             updateCartBadge()
                         }
@@ -214,6 +220,8 @@ class PlaceSearchActivity : AppCompatActivity() {
                         val data = response.body() ?: return
                         currentPickCount = data.currentCount
                         maxPickCount = data.maxCount
+                        pickedExternalIds.clear()
+                        pickedExternalIds.addAll(data.items.map { it.externalId })
                         updateCartBadge()
                     }
                 }
