@@ -125,6 +125,8 @@ class CreateRoomActivity : AppCompatActivity() {
 
     // ─── Step 1: 여행지 선택 (검색 + 탭 + 칩 + 리스트 통합) ────────────────
 
+    private var allPopularDestinations: List<DestinationResponse> = emptyList()
+
     private fun setupStep1() {
         etSearch = findViewById(R.id.etSearch)
         tabLayout = findViewById(R.id.tabLayout)
@@ -157,6 +159,23 @@ class CreateRoomActivity : AppCompatActivity() {
         })
 
         rebuildRegionChips()
+        loadPopularDestinations()
+    }
+
+    private fun loadPopularDestinations() {
+        RetrofitClient.api.getPopularDestinations()
+            .enqueue(object : Callback<List<DestinationResponse>> {
+                override fun onResponse(
+                    call: Call<List<DestinationResponse>>,
+                    response: Response<List<DestinationResponse>>
+                ) {
+                    allPopularDestinations = response.body() ?: emptyList()
+                    applyRegionFilter("인기")
+                }
+                override fun onFailure(call: Call<List<DestinationResponse>>, t: Throwable) {
+                    Toast.makeText(this@CreateRoomActivity, "여행지 목록을 불러오지 못했어요.", Toast.LENGTH_SHORT).show()
+                }
+            })
     }
 
     private fun rebuildRegionChips() {
@@ -186,20 +205,33 @@ class CreateRoomActivity : AppCompatActivity() {
 
     private fun applyRegionFilter(region: String) {
         val list = if (region == "인기") {
-            DestinationCatalog.TOP_PICKS.filter { it.overseas == step1OverseasTab }
+            allPopularDestinations.filter {
+                it.overseas == step1OverseasTab && DestinationCatalog.TOP_PICK_NAMES.contains(it.name)
+            }
         } else {
-            DestinationCatalog.byRegion(region)
+            allPopularDestinations.filter { it.region == region }
         }
         cityAdapter.submit(list)
     }
 
     private fun runLocalSearch(query: String) {
-        val results = DestinationCatalog.search(query)
-        if (results.isEmpty()) {
-            Toast.makeText(this, "아직 준비 중인 여행지예요. 목록에서 선택해주세요.", Toast.LENGTH_SHORT).show()
-            return
-        }
-        cityAdapter.submit(results)
+        RetrofitClient.api.searchDestinations(query)
+            .enqueue(object : Callback<List<DestinationResponse>> {
+                override fun onResponse(
+                    call: Call<List<DestinationResponse>>,
+                    response: Response<List<DestinationResponse>>
+                ) {
+                    val results = response.body() ?: emptyList()
+                    if (results.isEmpty()) {
+                        Toast.makeText(this@CreateRoomActivity, "검색 결과가 없어요.", Toast.LENGTH_SHORT).show()
+                    } else {
+                        cityAdapter.submit(results)
+                    }
+                }
+                override fun onFailure(call: Call<List<DestinationResponse>>, t: Throwable) {
+                    Toast.makeText(this@CreateRoomActivity, "검색 실패. 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
+                }
+            })
     }
 
     // ─── Step 2: 여행 정보 입력 ──────────────────────────────────────────────
