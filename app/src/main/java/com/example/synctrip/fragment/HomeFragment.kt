@@ -18,7 +18,6 @@ import com.example.synctrip.R
 import com.example.synctrip.RetrofitClient
 import com.example.synctrip.SubActivity
 import com.example.synctrip.TokenManager
-import com.example.synctrip.dto.destination.DestinationCatalog
 import com.example.synctrip.adapter.MemberAdapter
 import com.example.synctrip.adapter.PlaceAdapter
 import com.example.synctrip.dto.band.BandReadyResponse
@@ -87,13 +86,25 @@ class HomeFragment : Fragment() {
         }
 
         val destination = arguments?.getString("DESTINATION") ?: ""
-        val thumbUrl = DestinationCatalog.ALL.firstOrNull { destination.contains(it.name) }?.thumbnailUrl
-        if (!thumbUrl.isNullOrEmpty()) {
-            Glide.with(this)
-                .load(thumbUrl)
-                .centerCrop()
-                .into(view.findViewById<ImageView>(R.id.ivHeroBackground))
-        }
+        val ivHero = view.findViewById<ImageView>(R.id.ivHeroBackground)
+        RetrofitClient.api.getPopularDestinations()
+            .enqueue(object : Callback<List<com.example.synctrip.dto.destination.DestinationResponse>> {
+                override fun onResponse(
+                    call: Call<List<com.example.synctrip.dto.destination.DestinationResponse>>,
+                    response: Response<List<com.example.synctrip.dto.destination.DestinationResponse>>
+                ) {
+                    val thumbUrl = response.body()
+                        ?.firstOrNull { destination.contains(it.name) }
+                        ?.thumbnailUrl
+                    if (!thumbUrl.isNullOrEmpty() && isAdded) {
+                        Glide.with(this@HomeFragment)
+                            .load(thumbUrl)
+                            .centerCrop()
+                            .into(ivHero)
+                    }
+                }
+                override fun onFailure(call: Call<List<com.example.synctrip.dto.destination.DestinationResponse>>, t: Throwable) {}
+            })
 
         // 멤버 RecyclerView
         val rvMembers = view.findViewById<RecyclerView>(R.id.rvMembers)
