@@ -31,6 +31,7 @@ android {
         }
         buildConfigField("String", "KAKAO_NATIVE_KEY", "\"${localProperties["KAKAO_NATIVE_KEY"]}\"")
         buildConfigField("String", "KAKAO_REST_KEY", "\"${localProperties["KAKAO_REST_KEY"]}\"")
+        buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"${localProperties["GOOGLE_WEB_CLIENT_ID"]}\"")
         manifestPlaceholders["KAKAO_NATIVE_KEY"] = localProperties["KAKAO_NATIVE_KEY"] ?: ""
         manifestPlaceholders["KAKAO_SCHEME"] = "kakao${localProperties["KAKAO_NATIVE_KEY"]}"
     }
@@ -71,4 +72,5 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("com.github.bumptech.glide:glide:4.16.0")
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
+    implementation("com.google.android.gms:play-services-auth:21.2.0")
 }

@@ -40,17 +40,18 @@ class SubActivity : AppCompatActivity() {
         val endDate = intent.getStringExtra("END_DATE") ?: ""
         bandStatus = intent.getStringExtra("BAND_STATUS") ?: "PLANNING"
         overseas = intent.getBooleanExtra("OVERSEAS", false)
+        val destination = intent.getStringExtra("DESTINATION") ?: ""
 
         val toolbar = findViewById<MaterialToolbar>(R.id.toolbar)
         toolbar.title = roomName
         toolbar.setNavigationOnClickListener { finish() }
 
-        loadFragment(HomeFragment.newInstance(bandId, roomName, inviteCode, startDate, endDate, bandStatus))
+        loadFragment(HomeFragment.newInstance(bandId, roomName, inviteCode, startDate, endDate, bandStatus, destination))
 
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottom_navigation)
         bottomNav.setOnItemSelectedListener { item ->
             when (item.itemId) {
-                R.id.tab_home     -> loadFragment(HomeFragment.newInstance(bandId, roomName, inviteCode, startDate, endDate, bandStatus))
+                R.id.tab_home     -> loadFragment(HomeFragment.newInstance(bandId, roomName, inviteCode, startDate, endDate, bandStatus, destination))
                 R.id.tab_schedule -> loadFragment(ScheduleFragment.newInstance(bandId))
                 R.id.tab_passport -> loadFragment(PassportFragment())
                 R.id.tab_money    -> loadFragment(MoneyFragment())

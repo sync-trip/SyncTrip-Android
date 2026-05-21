@@ -14,11 +14,9 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.synctrip.adapter.CityListAdapter
-import com.example.synctrip.adapter.PopularDestinationAdapter
 import com.example.synctrip.dto.destination.DestinationCatalog
 import com.example.synctrip.dto.destination.DestinationResponse
 import com.example.synctrip.dto.group.BandSummary
@@ -37,17 +35,15 @@ class CreateRoomActivity : AppCompatActivity() {
 
     private var currentStep = 1
     private var selectedDestination: DestinationResponse? = null
-    private var step2OverseasTab = true
+    private var step1OverseasTab = true
 
     private lateinit var step1: View
     private lateinit var step2: View
-    private lateinit var step3: View
     private lateinit var tvStepTitle: TextView
     private lateinit var tvStepIndicator: TextView
     private lateinit var btnPrev: MaterialButton
     private lateinit var btnNext: MaterialButton
 
-    private lateinit var popularAdapter: PopularDestinationAdapter
     private lateinit var cityAdapter: CityListAdapter
 
     private lateinit var etSearch: EditText
@@ -80,7 +76,6 @@ class CreateRoomActivity : AppCompatActivity() {
 
         step1 = findViewById(R.id.step1)
         step2 = findViewById(R.id.step2)
-        step3 = findViewById(R.id.step3)
         tvStepTitle = findViewById(R.id.tvStepTitle)
         tvStepIndicator = findViewById(R.id.tvStepIndicator)
         btnPrev = findViewById(R.id.btnPrev)
@@ -92,7 +87,6 @@ class CreateRoomActivity : AppCompatActivity() {
 
         setupStep1()
         setupStep2()
-        setupStep3()
         goToStep(1)
     }
 
@@ -101,28 +95,23 @@ class CreateRoomActivity : AppCompatActivity() {
     }
 
     private fun goToStep(step: Int) {
-        currentStep = step.coerceIn(1, 3)
+        currentStep = step.coerceIn(1, 2)
         step1.visibility = if (currentStep == 1) View.VISIBLE else View.GONE
         step2.visibility = if (currentStep == 2) View.VISIBLE else View.GONE
-        step3.visibility = if (currentStep == 3) View.VISIBLE else View.GONE
 
-        tvStepIndicator.text = "$currentStep/3"
-        tvStepTitle.text = when (currentStep) {
-            1 -> "여행지 선택"
-            2 -> "도시 선택"
-            else -> "여행 정보"
-        }
+        tvStepIndicator.text = "$currentStep/2"
+        tvStepTitle.text = if (currentStep == 1) "여행지 선택" else "여행 정보"
         btnPrev.visibility = if (currentStep > 1) View.VISIBLE else View.GONE
-        btnNext.text = if (currentStep == 3) "방 만들기" else "계속하기"
+        btnNext.text = if (currentStep == 2) "방 만들기" else "계속하기"
 
-        if (currentStep == 3) refreshStep3Preview()
+        if (currentStep == 2) refreshStep2Preview()
         updateNextButtonEnabled()
     }
 
     private fun updateNextButtonEnabled() {
         btnNext.isEnabled = when (currentStep) {
-            1, 2 -> selectedDestination != null
-            3    -> true  // 항상 활성화 — 클릭 시 validateStep3()에서 검사
+            1    -> selectedDestination != null
+            2    -> true
             else -> false
         }
     }
@@ -130,22 +119,21 @@ class CreateRoomActivity : AppCompatActivity() {
     private fun onNextClicked() {
         when (currentStep) {
             1 -> goToStep(2)
-            2 -> goToStep(3)
-            3 -> createBand()
+            2 -> createBand()
         }
     }
 
-    // ─── Step 1 ─────────────────────────────────────────────
+    // ─── Step 1: 여행지 선택 (검색 + 탭 + 칩 + 리스트 통합) ────────────────
 
     private fun setupStep1() {
         etSearch = findViewById(R.id.etSearch)
-        val rvPopular = findViewById<RecyclerView>(R.id.rvPopular)
-        rvPopular.layoutManager = GridLayoutManager(this, 2)
+        tabLayout = findViewById(R.id.tabLayout)
+        chipGroupRegion = findViewById(R.id.chipGroupRegion)
 
-        popularAdapter = PopularDestinationAdapter(DestinationCatalog.TOP_PICKS) { d ->
-            selectDestination(d)
-        }
-        rvPopular.adapter = popularAdapter
+        val rvCities = findViewById<RecyclerView>(R.id.rvCities)
+        rvCities.layoutManager = LinearLayoutManager(this)
+        cityAdapter = CityListAdapter(mutableListOf()) { d -> selectDestination(d) }
+        rvCities.adapter = cityAdapter
 
         etSearch.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
@@ -157,32 +145,11 @@ class CreateRoomActivity : AppCompatActivity() {
                 true
             } else false
         }
-    }
-
-    private fun runLocalSearch(query: String) {
-        val results = DestinationCatalog.search(query)
-        if (results.isEmpty()) {
-            Toast.makeText(this, "검색 결과가 없어요. 인기 여행지에서 골라보세요.", Toast.LENGTH_SHORT).show()
-            return
-        }
-        // 첫 번째 결과 자동 선택 후 Step 2로 이동
-        selectDestination(results.first())
-        goToStep(2)
-    }
-
-    // ─── Step 2 ─────────────────────────────────────────────
-
-    private fun setupStep2() {
-        tabLayout = findViewById(R.id.tabLayout)
-        chipGroupRegion = findViewById(R.id.chipGroupRegion)
-        val rvCities = findViewById<RecyclerView>(R.id.rvCities)
-        rvCities.layoutManager = LinearLayoutManager(this)
-        cityAdapter = CityListAdapter(mutableListOf()) { d -> selectDestination(d) }
-        rvCities.adapter = cityAdapter
 
         tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab) {
-                step2OverseasTab = tab.position == 0
+                step1OverseasTab = tab.position == 0
+                etSearch.text?.clear()
                 rebuildRegionChips()
             }
             override fun onTabUnselected(tab: TabLayout.Tab) {}
@@ -194,27 +161,50 @@ class CreateRoomActivity : AppCompatActivity() {
 
     private fun rebuildRegionChips() {
         chipGroupRegion.removeAllViews()
-        val regions = if (step2OverseasTab) DestinationCatalog.OVERSEAS_REGIONS else DestinationCatalog.DOMESTIC_REGIONS
-        regions.forEachIndexed { idx, region ->
+
+        val popularChip = Chip(this).apply {
+            text = "인기"
+            isCheckable = true
+            isChecked = true
+            setOnClickListener { applyRegionFilter("인기") }
+        }
+        chipGroupRegion.addView(popularChip)
+
+        val regions = if (step1OverseasTab) DestinationCatalog.OVERSEAS_REGIONS else DestinationCatalog.DOMESTIC_REGIONS
+        regions.forEach { region ->
             val chip = Chip(this).apply {
                 text = region
                 isCheckable = true
-                isChecked = idx == 0
+                isChecked = false
                 setOnClickListener { applyRegionFilter(region) }
             }
             chipGroupRegion.addView(chip)
         }
-        applyRegionFilter(regions.first())
+
+        applyRegionFilter("인기")
     }
 
     private fun applyRegionFilter(region: String) {
-        val list = DestinationCatalog.byRegion(region)
+        val list = if (region == "인기") {
+            DestinationCatalog.TOP_PICKS.filter { it.overseas == step1OverseasTab }
+        } else {
+            DestinationCatalog.byRegion(region)
+        }
         cityAdapter.submit(list)
     }
 
-    // ─── Step 3 ─────────────────────────────────────────────
+    private fun runLocalSearch(query: String) {
+        val results = DestinationCatalog.search(query)
+        if (results.isEmpty()) {
+            Toast.makeText(this, "아직 준비 중인 여행지예요. 목록에서 선택해주세요.", Toast.LENGTH_SHORT).show()
+            return
+        }
+        cityAdapter.submit(results)
+    }
 
-    private fun setupStep3() {
+    // ─── Step 2: 여행 정보 입력 ──────────────────────────────────────────────
+
+    private fun setupStep2() {
         etBandName = findViewById(R.id.etBandName)
         tvStartDate = findViewById(R.id.tvStartDate)
         tvEndDate = findViewById(R.id.tvEndDate)
@@ -245,7 +235,6 @@ class CreateRoomActivity : AppCompatActivity() {
                 tvStartDate.text = startDate
                 tvStartDate.setTextColor(getColor(R.color.primary))
                 tvErrorStartDate.visibility = View.GONE
-                // 귀국일 순서 에러도 재검사
                 if (endDate.isNotEmpty() && endDate >= startDate) tvErrorEndDate.visibility = View.GONE
             }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show()
         }
@@ -259,7 +248,7 @@ class CreateRoomActivity : AppCompatActivity() {
         }
     }
 
-    private fun refreshStep3Preview() {
+    private fun refreshStep2Preview() {
         val d = selectedDestination ?: return
         tvSelectedFlag.text = DestinationCatalog.flagOf(d.countryCode)
         tvSelectedCity.text = "${d.name}, ${d.country}"
@@ -285,7 +274,7 @@ class CreateRoomActivity : AppCompatActivity() {
         }
     }
 
-    private fun validateStep3(): Boolean {
+    private fun validateStep2(): Boolean {
         var valid = true
 
         if (etBandName.text.toString().trim().isEmpty()) {
@@ -315,17 +304,16 @@ class CreateRoomActivity : AppCompatActivity() {
         return valid
     }
 
-    // ─── 공통 ─────────────────────────────────────────────
+    // ─── 공통 ────────────────────────────────────────────────────────────────
 
     private fun selectDestination(d: DestinationResponse) {
         selectedDestination = d
-        popularAdapter.selectedName = d.name
         cityAdapter.selectedName = d.name
         updateNextButtonEnabled()
     }
 
     private fun createBand() {
-        if (!validateStep3()) return
+        if (!validateStep2()) return
         val d = selectedDestination ?: return
         val name = etBandName.text.toString().trim().ifEmpty { "${d.name} 여행" }
 
@@ -362,6 +350,7 @@ class CreateRoomActivity : AppCompatActivity() {
                         intent.putExtra("END_DATE", body?.endDate ?: endDate)
                         intent.putExtra("BAND_STATUS", body?.status ?: "PLANNING")
                         intent.putExtra("OVERSEAS", d.overseas)
+                        intent.putExtra("DESTINATION", "${d.country} ${d.name}")
                         startActivity(intent)
                         finish()
                     } else {

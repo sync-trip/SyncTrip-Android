@@ -33,7 +33,7 @@ class PlaceSearchActivity : AppCompatActivity() {
     private lateinit var loadingOverlay: android.view.View
     private var bandId: Long = -1L
     private var overseas: Boolean = false
-    private var currentCategory: String? = null  // null = 전체
+    private var currentCategory: String? = null
     private var currentPickCount = 0
     private var maxPickCount = 5
 
@@ -113,6 +113,7 @@ class PlaceSearchActivity : AppCompatActivity() {
     private fun searchOverseasPlaces() {
         if (bandId == -1L) return
         val keyword = findViewById<EditText>(R.id.etSearch).text.toString().trim().ifBlank { null }
+        if (keyword == null) return
         loadingOverlay.visibility = View.VISIBLE
         RetrofitClient.api.searchOverseasPlaces(bandId, keyword, currentCategory)
             .enqueue(object : Callback<List<PlaceSearchResult>> {
@@ -144,7 +145,8 @@ class PlaceSearchActivity : AppCompatActivity() {
         x = longitude.toString(),
         y = latitude.toString(),
         phone = null,
-        place_url = thumbnailUrl
+        place_url = thumbnailUrl,
+        rating = rating
     )
 
     private fun applyFilter() {

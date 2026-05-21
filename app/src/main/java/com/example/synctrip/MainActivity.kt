@@ -34,6 +34,8 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
+        handleDeepLink(intent)     // ← 앱이 꺼진 상태에서 링크 클릭 시 처리
+
         tvEmpty = findViewById(R.id.tvEmpty)
         rvRoomList = findViewById(R.id.rvRoomList)
         rvRoomList.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
@@ -48,6 +50,7 @@ class MainActivity : AppCompatActivity() {
                 intent.putExtra("END_DATE", room.endDate)
                 intent.putExtra("BAND_STATUS", room.status)
                 intent.putExtra("OVERSEAS", room.isOverseas)
+                intent.putExtra("DESTINATION", room.city)
                 startActivity(intent)
             },
             onOptionsClick = { room, anchor -> showRoomOptions(room, anchor) }
@@ -116,14 +119,15 @@ class MainActivity : AppCompatActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        setIntent(intent)
+        setIntent(intent)          // ← 현재 intent 최신화 (없으면 구버전 intent로 처리됨)
+        handleDeepLink(intent)
     }
 
     private fun handleDeepLink(intent: Intent) {
         val data = intent.data ?: return
         val code = data.getQueryParameter("code") ?: return
         if (code.isEmpty()) return
-        intent.data = null  // onResume 재호출 시 중복 처리 방지
+        intent.data = null         // ← 처리 후 즉시 지워서 onResume 재진입 시 재호출 방지
         showJoinDialog(code)
     }
 
@@ -159,7 +163,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        handleDeepLink(intent)
         loadMyBands()
         findViewById<SwipeRefreshLayout>(R.id.swipeRefresh)?.apply {
             setColorSchemeResources(R.color.primary)

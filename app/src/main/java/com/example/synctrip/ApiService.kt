@@ -4,6 +4,7 @@ import com.example.synctrip.dto.TestResponse
 import com.example.synctrip.dto.band.BandReadyResponse
 import com.example.synctrip.dto.band.BandStatusTransitionResponse
 import com.example.synctrip.dto.destination.DestinationResponse
+import com.example.synctrip.dto.kakao.GoogleLoginRequest
 import com.example.synctrip.dto.kakao.KakaoLoginRequest
 import com.example.synctrip.dto.kakao.KakaoLoginResponse
 import com.example.synctrip.dto.kakao.TokenRefreshRequest
@@ -55,6 +56,9 @@ interface ApiService {
     ): Call<List<PlaceSearchResult>>
 
     // ─── Auth ───────────────────────────────────────────────────────────────
+
+    @POST("auth/google/login")
+    fun googleLogin(@Body request: GoogleLoginRequest): Call<KakaoLoginResponse>
 
     @POST("auth/kakao/login")
     fun kakaoLogin(@Body request: KakaoLoginRequest): Call<KakaoLoginResponse>
