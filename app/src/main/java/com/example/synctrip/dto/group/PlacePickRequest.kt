@@ -11,5 +11,5 @@ data class PlacePickRequest(
     val rating: Float? = null,
     val thumbnailUrl: String? = null,
     val openingHoursJson: String? = null,
-    val estimatedDuration: Int = 60
+    val estimatedDuration: Int? = null
 )
