@@ -1,5 +1,7 @@
 package com.example.synctrip
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.view.inputmethod.EditorInfo
@@ -58,7 +60,7 @@ class PlaceSearchActivity : AppCompatActivity() {
 
         val rvSearchResults = findViewById<RecyclerView>(R.id.rvSearchResults)
         rvSearchResults.layoutManager = LinearLayoutManager(this)
-        adapter = PlaceSearchAdapter(filteredResults) { place -> addPick(place) }
+        adapter = PlaceSearchAdapter(filteredResults, { place -> addPick(place) }, { place -> openDetail(place) })
         rvSearchResults.adapter = adapter
 
         val etSearch = findViewById<EditText>(R.id.etSearch)
@@ -226,6 +228,16 @@ class PlaceSearchActivity : AppCompatActivity() {
     private fun hideKeyboard(view: View) {
         val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
         imm.hideSoftInputFromWindow(view.windowToken, 0)
+    }
+
+    private fun openDetail(place: PlaceDocument) {
+        val url = if (overseas) {
+            "https://www.google.com/maps/search/?api=1&query_place_id=${place.id}&query=${Uri.encode(place.place_name)}"
+        } else {
+            place.place_url?.takeIf { it.isNotBlank() }
+                ?: "https://place.map.kakao.com/${place.id}"
+        }
+        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
     }
 
     private fun kakaoToCategory(categoryName: String): String = when {
