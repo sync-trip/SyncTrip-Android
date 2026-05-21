@@ -1,3 +1,7 @@
 package com.example.synctrip.dto.kakao
 
-data class GoogleLoginRequest(val idToken: String)
+import com.google.gson.annotations.SerializedName
+
+data class GoogleLoginRequest(
+    @SerializedName("id_token") val idToken: String
+)

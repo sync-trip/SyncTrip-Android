@@ -496,7 +496,12 @@ class HomeFragment : Fragment() {
                             if (pickList.isEmpty()) View.GONE else View.VISIBLE
                         Toast.makeText(requireContext(), "장소를 삭제했어요", Toast.LENGTH_SHORT).show()
                     } else {
-                        Toast.makeText(requireContext(), "삭제 실패 (${response.code()})", Toast.LENGTH_SHORT).show()
+                        val msg = when (response.code()) {
+                            409 -> "투표가 시작된 후에는 장소를 삭제할 수 없어요"
+                            403 -> "삭제 권한이 없어요"
+                            else -> "삭제 실패 (${response.code()})"
+                        }
+                        Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show()
                     }
                 }
                 override fun onFailure(call: Call<Void>, t: Throwable) {

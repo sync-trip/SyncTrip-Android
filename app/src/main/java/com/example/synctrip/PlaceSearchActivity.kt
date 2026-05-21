@@ -1,5 +1,7 @@
 package com.example.synctrip
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.view.inputmethod.EditorInfo
@@ -36,6 +38,8 @@ class PlaceSearchActivity : AppCompatActivity() {
     private var currentCategory: String? = null
     private var currentPickCount = 0
     private var maxPickCount = 5
+    private val pickedExternalIds = mutableSetOf<String>()
+    private var isSearching = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,7 +62,7 @@ class PlaceSearchActivity : AppCompatActivity() {
 
         val rvSearchResults = findViewById<RecyclerView>(R.id.rvSearchResults)
         rvSearchResults.layoutManager = LinearLayoutManager(this)
-        adapter = PlaceSearchAdapter(filteredResults) { place -> addPick(place) }
+        adapter = PlaceSearchAdapter(filteredResults, { place -> addPick(place) }, { place -> openDetail(place) })
         rvSearchResults.adapter = adapter
 
         val etSearch = findViewById<EditText>(R.id.etSearch)
@@ -112,12 +116,15 @@ class PlaceSearchActivity : AppCompatActivity() {
 
     private fun searchOverseasPlaces() {
         if (bandId == -1L) return
+        if (isSearching) return
         val keyword = findViewById<EditText>(R.id.etSearch).text.toString().trim().ifBlank { null }
         if (keyword == null) return
+        isSearching = true
         loadingOverlay.visibility = View.VISIBLE
         RetrofitClient.api.searchOverseasPlaces(bandId, keyword, currentCategory)
             .enqueue(object : Callback<List<PlaceSearchResult>> {
                 override fun onResponse(call: Call<List<PlaceSearchResult>>, response: Response<List<PlaceSearchResult>>) {
+                    isSearching = false
                     loadingOverlay.visibility = View.GONE
                     if (response.isSuccessful) {
                         val results = response.body() ?: emptyList()
@@ -130,6 +137,7 @@ class PlaceSearchActivity : AppCompatActivity() {
                     }
                 }
                 override fun onFailure(call: Call<List<PlaceSearchResult>>, t: Throwable) {
+                    isSearching = false
                     loadingOverlay.visibility = View.GONE
                     android.util.Log.e("PlaceSearch", "해외 장소 검색 실패: ${t.message}")
                 }
@@ -169,6 +177,10 @@ class PlaceSearchActivity : AppCompatActivity() {
 
     private fun addPick(place: PlaceDocument) {
         if (bandId == -1L) return
+        if (pickedExternalIds.contains(place.id)) {
+            android.widget.Toast.makeText(this, "이미 담은 장소예요", android.widget.Toast.LENGTH_SHORT).show()
+            return
+        }
         if (currentPickCount >= maxPickCount) {
             android.widget.Toast.makeText(this, "장소를 ${maxPickCount}개 모두 담았어요!\n더 담으려면 홈에서 기존 장소를 삭제해주세요.", android.widget.Toast.LENGTH_LONG).show()
             return
@@ -178,9 +190,11 @@ class PlaceSearchActivity : AppCompatActivity() {
             externalId = place.id,
             name = place.place_name,
             category = if (overseas) place.category_name else kakaoToCategory(place.category_name),
-            latitude = place.y.toDouble(),
-            longitude = place.x.toDouble(),
-            address = place.road_address_name.ifEmpty { place.address_name }
+            latitude = place.y.toDoubleOrNull() ?: 0.0,
+            longitude = place.x.toDoubleOrNull() ?: 0.0,
+            address = place.road_address_name.ifEmpty { place.address_name },
+            rating = place.rating,
+            thumbnailUrl = if (overseas) place.place_url?.takeIf { it.isNotBlank() } else null
         )
         RetrofitClient.api.addPick(bandId, request)
             .enqueue(object : Callback<PlacePickResponse> {
@@ -188,6 +202,7 @@ class PlaceSearchActivity : AppCompatActivity() {
                     when {
                         response.isSuccessful -> {
                             android.widget.Toast.makeText(this@PlaceSearchActivity, "${place.place_name} 담았어요!", android.widget.Toast.LENGTH_SHORT).show()
+                            pickedExternalIds.add(place.id)
                             currentPickCount++
                             updateCartBadge()
                         }
@@ -212,6 +227,8 @@ class PlaceSearchActivity : AppCompatActivity() {
                         val data = response.body() ?: return
                         currentPickCount = data.currentCount
                         maxPickCount = data.maxCount
+                        pickedExternalIds.clear()
+                        pickedExternalIds.addAll(data.items.map { it.externalId })
                         updateCartBadge()
                     }
                 }
@@ -226,6 +243,16 @@ class PlaceSearchActivity : AppCompatActivity() {
     private fun hideKeyboard(view: View) {
         val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
         imm.hideSoftInputFromWindow(view.windowToken, 0)
+    }
+
+    private fun openDetail(place: PlaceDocument) {
+        val url = if (overseas) {
+            "https://www.google.com/maps/search/?api=1&query_place_id=${place.id}&query=${Uri.encode(place.place_name)}"
+        } else {
+            place.place_url?.takeIf { it.isNotBlank() }
+                ?: "https://place.map.kakao.com/${place.id}"
+        }
+        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
     }
 
     private fun kakaoToCategory(categoryName: String): String = when {

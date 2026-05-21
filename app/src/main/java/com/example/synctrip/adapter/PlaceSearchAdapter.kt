@@ -13,7 +13,8 @@ import com.google.android.material.button.MaterialButton
 
 class PlaceSearchAdapter(
     private val places: List<PlaceDocument>,
-    private val onPickClick: (PlaceDocument) -> Unit
+    private val onPickClick: (PlaceDocument) -> Unit,
+    private val onDetailClick: (PlaceDocument) -> Unit
 ) : RecyclerView.Adapter<PlaceSearchAdapter.VH>() {
 
     inner class VH(view: View) : RecyclerView.ViewHolder(view) {
@@ -23,6 +24,7 @@ class PlaceSearchAdapter(
         val tvCategory: TextView = view.findViewById(R.id.tvPlaceCategory)
         val tvRating: TextView = view.findViewById(R.id.tvRating)
         val btnAdd: MaterialButton = view.findViewById(R.id.btnAddPlace)
+        val btnDetail: MaterialButton = view.findViewById(R.id.btnDetailPlace)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
@@ -36,6 +38,7 @@ class PlaceSearchAdapter(
         holder.tvAddress.text = place.road_address_name.ifEmpty { place.address_name }
         holder.tvCategory.text = shortenCategory(place.category_name)
         holder.btnAdd.setOnClickListener { onPickClick(place) }
+        holder.btnDetail.setOnClickListener { onDetailClick(place) }
 
         if (!place.place_url.isNullOrBlank()) {
             Glide.with(holder.ivThumbnail)

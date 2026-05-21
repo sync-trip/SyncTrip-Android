@@ -99,19 +99,17 @@ class MainActivity : AppCompatActivity() {
                 .show()
         }
 
-        findViewById<android.widget.ImageButton>(R.id.btnSettings).setOnClickListener {
+        findViewById<View>(R.id.btnLogout).setOnClickListener {
             android.app.AlertDialog.Builder(this)
-                .setTitle("설정")
-                .setItems(arrayOf("로그아웃")) { _, which ->
-                    when (which) {
-                        0 -> {
-                            TokenManager.clear(this)
-                            val intent = Intent(this, LoginActivity::class.java)
-                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                            startActivity(intent)
-                        }
-                    }
+                .setTitle("로그아웃")
+                .setMessage("정말 로그아웃 할까요?")
+                .setPositiveButton("로그아웃") { _, _ ->
+                    TokenManager.clear(this)
+                    val intent = Intent(this, LoginActivity::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    startActivity(intent)
                 }
+                .setNegativeButton("취소", null)
                 .show()
         }
 
