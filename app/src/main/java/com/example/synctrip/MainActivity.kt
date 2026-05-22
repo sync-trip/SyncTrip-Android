@@ -16,8 +16,11 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.bumptech.glide.Glide
 import com.example.synctrip.adapter.RoomAdapter
+import com.example.synctrip.dto.group.BandJoinRequest
 import com.example.synctrip.dto.group.BandSummary
 import com.example.synctrip.dto.Room
+import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.textfield.TextInputEditText
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -68,42 +71,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         findViewById<View>(R.id.btnJoinRoom).setOnClickListener {
-            val input = android.widget.EditText(this)
-            input.hint = "초대 코드 입력"
-            input.inputType = android.text.InputType.TYPE_CLASS_TEXT
-
-            android.app.AlertDialog.Builder(this)
-                .setTitle("초대 코드로 참여")
-                .setView(input)
-                .setPositiveButton("참여하기") { _, _ ->
-                    val code = input.text.toString().trim()
-                    if (code.isEmpty()) {
-                        android.widget.Toast.makeText(this, "초대 코드를 입력해주세요!", android.widget.Toast.LENGTH_SHORT).show()
-                        return@setPositiveButton
-                    }
-                    RetrofitClient.api.joinBand(com.example.synctrip.dto.group.BandJoinRequest(code))
-                        .enqueue(object : retrofit2.Callback<com.example.synctrip.dto.group.BandSummary> {
-                            override fun onResponse(call: retrofit2.Call<com.example.synctrip.dto.group.BandSummary>, response: retrofit2.Response<com.example.synctrip.dto.group.BandSummary>) {
-                                if (response.isSuccessful) {
-                                    android.widget.Toast.makeText(this@MainActivity, "여행 방에 참여했어요!", android.widget.Toast.LENGTH_SHORT).show()
-                                    loadMyBands()
-                                } else {
-                                    when (response.code()) {
-                                        401, 403 -> redirectToLogin()
-                                        404 -> android.widget.Toast.makeText(this@MainActivity, "유효하지 않은 초대 코드예요", android.widget.Toast.LENGTH_SHORT).show()
-                                        409 -> android.widget.Toast.makeText(this@MainActivity, "이미 참여 중인 방이에요", android.widget.Toast.LENGTH_SHORT).show()
-                                        410 -> android.widget.Toast.makeText(this@MainActivity, "만료된 초대 코드예요. 방장한테 다시 받아보세요", android.widget.Toast.LENGTH_SHORT).show()
-                                        else -> android.widget.Toast.makeText(this@MainActivity, "참여 실패 (${response.code()})", android.widget.Toast.LENGTH_SHORT).show()
-                                    }
-                                }
-                            }
-                            override fun onFailure(call: retrofit2.Call<com.example.synctrip.dto.group.BandSummary>, t: Throwable) {
-                                android.widget.Toast.makeText(this@MainActivity, "서버 연결 실패", android.widget.Toast.LENGTH_SHORT).show()
-                            }
-                        })
-                }
-                .setNegativeButton("취소", null)
-                .show()
+            showJoinCodeSheet()
         }
 
         findViewById<View>(R.id.btnMenu).setOnClickListener {
@@ -181,6 +149,46 @@ class MainActivity : AppCompatActivity() {
             drawerLayout.closeDrawer(GravityCompat.END)
             showWithdrawDialog()
         }
+    }
+
+    private fun showJoinCodeSheet() {
+        val sheet = BottomSheetDialog(this)
+        val view = layoutInflater.inflate(R.layout.bottom_sheet_join, null)
+        sheet.setContentView(view)
+
+        val et = view.findViewById<TextInputEditText>(R.id.etInviteCode)
+        view.findViewById<View>(R.id.btnJoinConfirm).setOnClickListener {
+            val code = et.text?.toString()?.trim() ?: ""
+            if (code.isEmpty()) {
+                view.findViewById<com.google.android.material.textfield.TextInputLayout>(R.id.tilInviteCode)
+                    .error = "초대 코드를 입력해주세요"
+                return@setOnClickListener
+            }
+            RetrofitClient.api.joinBand(BandJoinRequest(code))
+                .enqueue(object : Callback<BandSummary> {
+                    override fun onResponse(call: Call<BandSummary>, response: Response<BandSummary>) {
+                        if (response.isSuccessful) {
+                            sheet.dismiss()
+                            android.widget.Toast.makeText(this@MainActivity, "여행 방에 참여했어요!", android.widget.Toast.LENGTH_SHORT).show()
+                            loadMyBands()
+                        } else {
+                            val msg = when (response.code()) {
+                                401, 403 -> { redirectToLogin(); return }
+                                404 -> "유효하지 않은 초대 코드예요"
+                                409 -> "이미 참여 중인 방이에요"
+                                410 -> "만료된 초대 코드예요. 방장한테 다시 받아보세요"
+                                else -> "참여 실패 (${response.code()})"
+                            }
+                            view.findViewById<com.google.android.material.textfield.TextInputLayout>(R.id.tilInviteCode)
+                                .error = msg
+                        }
+                    }
+                    override fun onFailure(call: Call<BandSummary>, t: Throwable) {
+                        android.widget.Toast.makeText(this@MainActivity, "서버 연결 실패", android.widget.Toast.LENGTH_SHORT).show()
+                    }
+                })
+        }
+        sheet.show()
     }
 
     private fun showLogoutDialog() {
