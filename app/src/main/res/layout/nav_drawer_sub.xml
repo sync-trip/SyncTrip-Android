@@ -1,54 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/navDrawerRoot"
-    android:layout_width="280dp"
+    android:id="@+id/navSubDrawerRoot"
+    android:layout_width="260dp"
     android:layout_height="match_parent"
     android:layout_gravity="end"
     android:orientation="vertical"
     android:background="@color/surface_lowest"
     android:elevation="8dp">
 
-    <!-- 상단 프로필 영역 -->
+    <!-- 헤더: 방 이름 + 여행지 -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:paddingTop="52dp"
-        android:paddingBottom="24dp"
-        android:paddingHorizontal="24dp"
+        android:paddingBottom="20dp"
+        android:paddingHorizontal="20dp"
         android:background="@color/primary_dark">
 
-        <ImageView
-            android:id="@+id/ivUserProfile"
-            android:layout_width="64dp"
-            android:layout_height="64dp"
-            android:src="@drawable/ic_avatar_default"
-            android:scaleType="centerCrop"
-            android:contentDescription="프로필 사진" />
-
         <TextView
-            android:id="@+id/tvUserName"
+            android:id="@+id/tvDrawerRoomName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:text="내 이름"
+            android:text="여행 방"
             android:textColor="@color/white"
             android:textSize="18sp"
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/tvUserId"
+            android:id="@+id/tvDrawerDestination"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:text="SyncTrip 멤버"
+            android:layout_marginTop="4dp"
+            android:text=""
             android:textColor="#CCE8F4"
             android:textSize="13sp" />
 
     </LinearLayout>
 
-    <!-- 메뉴 항목 영역 -->
+    <!-- 메뉴 항목 -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -58,169 +49,149 @@
         android:paddingBottom="8dp">
 
         <LinearLayout
-            android:id="@+id/menuNavProfile"
+            android:id="@+id/navTabHome"
             android:layout_width="match_parent"
             android:layout_height="52dp"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:paddingHorizontal="24dp"
+            android:paddingHorizontal="20dp"
             android:background="?attr/selectableItemBackground"
             android:clickable="true"
             android:focusable="true">
 
             <ImageView
+                android:id="@+id/iconTabHome"
                 android:layout_width="22dp"
                 android:layout_height="22dp"
-                android:src="@drawable/ic_person"
+                android:src="@drawable/ic_home"
                 android:tint="@color/text_secondary" />
 
             <TextView
+                android:id="@+id/textTabHome"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
-                android:text="내 프로필"
+                android:text="홈"
                 android:textColor="@color/text_primary"
                 android:textSize="15sp" />
 
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/menuNavPassport"
+            android:id="@+id/navTabSchedule"
             android:layout_width="match_parent"
             android:layout_height="52dp"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:paddingHorizontal="24dp"
+            android:paddingHorizontal="20dp"
             android:background="?attr/selectableItemBackground"
             android:clickable="true"
             android:focusable="true">
 
             <ImageView
+                android:id="@+id/iconTabSchedule"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/ic_schedule"
+                android:tint="@color/text_secondary" />
+
+            <TextView
+                android:id="@+id/textTabSchedule"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:text="일정"
+                android:textColor="@color/text_primary"
+                android:textSize="15sp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/navTabPassport"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="20dp"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true">
+
+            <ImageView
+                android:id="@+id/iconTabPassport"
                 android:layout_width="22dp"
                 android:layout_height="22dp"
                 android:src="@drawable/ic_passport"
                 android:tint="@color/text_secondary" />
 
             <TextView
+                android:id="@+id/textTabPassport"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
-                android:text="여권 스탬프"
+                android:text="내 여권"
                 android:textColor="@color/text_primary"
                 android:textSize="15sp" />
 
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/menuNavNotifications"
+            android:id="@+id/navTabMoney"
             android:layout_width="match_parent"
             android:layout_height="52dp"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:paddingHorizontal="24dp"
+            android:paddingHorizontal="20dp"
             android:background="?attr/selectableItemBackground"
             android:clickable="true"
             android:focusable="true">
 
             <ImageView
+                android:id="@+id/iconTabMoney"
                 android:layout_width="22dp"
                 android:layout_height="22dp"
-                android:src="@drawable/ic_notifications"
+                android:src="@drawable/ic_money"
                 android:tint="@color/text_secondary" />
 
             <TextView
+                android:id="@+id/textTabMoney"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
-                android:text="알림"
+                android:text="정산"
                 android:textColor="@color/text_primary"
                 android:textSize="15sp" />
 
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/menuNavSettings"
+            android:id="@+id/navTabPhoto"
             android:layout_width="match_parent"
             android:layout_height="52dp"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:paddingHorizontal="24dp"
+            android:paddingHorizontal="20dp"
             android:background="?attr/selectableItemBackground"
             android:clickable="true"
             android:focusable="true">
 
             <ImageView
+                android:id="@+id/iconTabPhoto"
                 android:layout_width="22dp"
                 android:layout_height="22dp"
-                android:src="@drawable/ic_settings"
+                android:src="@drawable/ic_photo"
                 android:tint="@color/text_secondary" />
 
             <TextView
+                android:id="@+id/textTabPhoto"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
-                android:text="설정"
+                android:text="사진"
                 android:textColor="@color/text_primary"
                 android:textSize="15sp" />
 
         </LinearLayout>
-
-    </LinearLayout>
-
-    <!-- 하단 구분선 + 로그아웃/탈퇴 -->
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="@color/divider" />
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:paddingTop="8dp"
-        android:paddingBottom="24dp">
-
-        <LinearLayout
-            android:id="@+id/menuNavLogout"
-            android:layout_width="match_parent"
-            android:layout_height="52dp"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:paddingHorizontal="24dp"
-            android:background="?attr/selectableItemBackground"
-            android:clickable="true"
-            android:focusable="true">
-
-            <ImageView
-                android:layout_width="22dp"
-                android:layout_height="22dp"
-                android:src="@drawable/ic_logout"
-                android:tint="@color/text_secondary" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:text="로그아웃"
-                android:textColor="@color/text_primary"
-                android:textSize="15sp" />
-
-        </LinearLayout>
-
-        <TextView
-            android:id="@+id/menuNavWithdraw"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="62dp"
-            android:layout_marginBottom="8dp"
-            android:text="회원 탈퇴"
-            android:textColor="@color/danger"
-            android:textSize="12sp"
-            android:background="?attr/selectableItemBackground"
-            android:clickable="true"
-            android:focusable="true"
-            android:paddingVertical="6dp"
-            android:paddingHorizontal="4dp" />
 
     </LinearLayout>
 

@@ -3,27 +3,27 @@
 
     <item
         android:id="@+id/tab_home"
-        android:icon="@android:drawable/ic_menu_compass"
+        android:icon="@drawable/ic_home"
         android:title="홈" />
 
     <item
         android:id="@+id/tab_schedule"
-        android:icon="@android:drawable/ic_menu_today"
+        android:icon="@drawable/ic_schedule"
         android:title="일정" />
 
     <item
         android:id="@+id/tab_passport"
-        android:icon="@android:drawable/ic_menu_myplaces"
+        android:icon="@drawable/ic_passport"
         android:title="내 여권" />
 
     <item
         android:id="@+id/tab_money"
-        android:icon="@android:drawable/ic_menu_manage"
+        android:icon="@drawable/ic_money"
         android:title="정산" />
 
     <item
         android:id="@+id/tab_photo"
-        android:icon="@android:drawable/ic_menu_camera"
+        android:icon="@drawable/ic_photo"
         android:title="사진" />
 
 </menu>

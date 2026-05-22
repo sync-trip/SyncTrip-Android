@@ -3,6 +3,8 @@ package com.example.synctrip
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import android.widget.ImageView
+import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
@@ -12,6 +14,7 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.bumptech.glide.Glide
 import com.example.synctrip.adapter.RoomAdapter
 import com.example.synctrip.dto.group.BandSummary
 import com.example.synctrip.dto.Room
@@ -105,6 +108,44 @@ class MainActivity : AppCompatActivity() {
 
         findViewById<View>(R.id.btnMenu).setOnClickListener {
             drawerLayout.openDrawer(GravityCompat.END)
+        }
+
+        setupDrawer()
+    }
+
+    private fun setupDrawer() {
+        // 네비게이션 바 높이만큼 드로어 하단 패딩 적용
+        val drawerRoot = drawerLayout.findViewById<View>(R.id.navDrawerRoot)
+        ViewCompat.setOnApplyWindowInsetsListener(drawerRoot) { v, insets ->
+            val navBar = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
+            v.setPadding(0, 0, 0, navBar.bottom)
+            insets
+        }
+
+        // 프로필 정보 연동
+        val userName = TokenManager.getUserName(this)
+        val profileImageUrl = TokenManager.getProfileImageUrl(this)
+        val userEmail = TokenManager.getUserEmail(this)
+
+        drawerLayout.findViewById<TextView>(R.id.tvUserName).text =
+            if (userName.isNullOrEmpty()) "SyncTrip 멤버" else userName
+
+        val tvUserId = drawerLayout.findViewById<TextView>(R.id.tvUserId)
+        if (!userEmail.isNullOrEmpty()) {
+            tvUserId.text = userEmail
+            tvUserId.visibility = android.view.View.VISIBLE
+        } else {
+            tvUserId.visibility = android.view.View.GONE
+        }
+
+        val ivProfile = drawerLayout.findViewById<ImageView>(R.id.ivUserProfile)
+        if (!profileImageUrl.isNullOrEmpty()) {
+            Glide.with(this)
+                .load(profileImageUrl)
+                .circleCrop()
+                .placeholder(R.drawable.ic_avatar_default)
+                .error(R.drawable.ic_avatar_default)
+                .into(ivProfile)
         }
 
         setupDrawerMenuListeners()

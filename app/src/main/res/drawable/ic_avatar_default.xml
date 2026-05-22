@@ -1,0 +1,18 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="64dp"
+    android:height="64dp"
+    android:viewportWidth="64"
+    android:viewportHeight="64">
+    <!-- 배경 원 -->
+    <path
+        android:fillColor="#33FFFFFF"
+        android:pathData="M32,2A30,30 0 0,1 62,32A30,30 0 0,1 32,62A30,30 0 0,1 2,32A30,30 0 0,1 32,2Z"/>
+    <!-- 사람 머리 -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M32,18c4.4,0 8,3.6 8,8s-3.6,8 -8,8 -8,-3.6 -8,-8 3.6,-8 8,-8z"/>
+    <!-- 사람 몸통 -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M32,38c-8,0 -16,4 -16,8v3h32v-3c0,-4 -8,-8 -16,-8z"/>
+</vector>

@@ -148,7 +148,10 @@ class LoginActivity : AppCompatActivity() {
                 body.accessToken,
                 body.refreshToken,
                 body.userId,
-                body.accessTokenExpiresIn
+                body.accessTokenExpiresIn,
+                body.name,
+                body.profileImageUrl,
+                body.email
             )
             registerFcmToken()
         }

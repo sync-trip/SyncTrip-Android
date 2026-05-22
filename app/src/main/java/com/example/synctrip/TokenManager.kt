@@ -10,6 +10,9 @@ object TokenManager {
     private const val KEY_USER_ID = "user_id"
     private const val KEY_REFRESH_TOKEN = "refresh_token"
     private const val KEY_ACCESS_EXPIRES_AT = "access_token_expires_at"
+    private const val KEY_USER_NAME = "user_name"
+    private const val KEY_USER_PROFILE_IMAGE = "user_profile_image"
+    private const val KEY_USER_EMAIL = "user_email"
 
     private fun prefs(context: Context): SharedPreferences {
         return context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
@@ -33,14 +36,30 @@ object TokenManager {
 
     // 로그인 응답 전체 저장 (refreshToken + 만료시각 포함)
     fun saveLoginResponse(context: Context, accessToken: String, refreshToken: String,
-                          userId: Long, accessTokenExpiresIn: Long) {
+                          userId: Long, accessTokenExpiresIn: Long,
+                          userName: String? = null, profileImageUrl: String? = null,
+                          email: String? = null) {
         prefs(context).edit().apply {
             putString(KEY_JWT, accessToken)
             putString(KEY_REFRESH_TOKEN, refreshToken)
             putLong(KEY_USER_ID, userId)
-            // accessTokenExpiresIn이 초 단위라고 가정, 밀리초로 변환
             putLong(KEY_ACCESS_EXPIRES_AT, System.currentTimeMillis() + accessTokenExpiresIn * 1000)
+            if (userName != null) putString(KEY_USER_NAME, userName)
+            if (profileImageUrl != null) putString(KEY_USER_PROFILE_IMAGE, profileImageUrl)
+            if (email != null) putString(KEY_USER_EMAIL, email)
         }.apply()
+    }
+
+    fun getUserName(context: Context): String? {
+        return prefs(context).getString(KEY_USER_NAME, null)
+    }
+
+    fun getProfileImageUrl(context: Context): String? {
+        return prefs(context).getString(KEY_USER_PROFILE_IMAGE, null)
+    }
+
+    fun getUserEmail(context: Context): String? {
+        return prefs(context).getString(KEY_USER_EMAIL, null)
     }
 
     fun getRefreshToken(context: Context): String? {

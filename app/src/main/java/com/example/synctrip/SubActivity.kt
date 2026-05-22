@@ -5,7 +5,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import com.example.synctrip.fragment.HomeFragment
 import com.example.synctrip.fragment.MoneyFragment
@@ -29,17 +28,17 @@ class SubActivity : AppCompatActivity() {
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(0, systemBars.top, 0, systemBars.bottom)
+            v.setPadding(0, systemBars.top, 0, 0)
             insets
         }
 
-        val roomName = intent.getStringExtra("ROOM_NAME") ?: ""
-        bandId = intent.getLongExtra("BAND_ID", -1L)
-        val inviteCode = intent.getStringExtra("INVITE_CODE") ?: ""
-        val startDate = intent.getStringExtra("START_DATE") ?: ""
-        val endDate = intent.getStringExtra("END_DATE") ?: ""
-        bandStatus = intent.getStringExtra("BAND_STATUS") ?: "PLANNING"
-        overseas = intent.getBooleanExtra("OVERSEAS", false)
+        val roomName    = intent.getStringExtra("ROOM_NAME") ?: ""
+        bandId          = intent.getLongExtra("BAND_ID", -1L)
+        val inviteCode  = intent.getStringExtra("INVITE_CODE") ?: ""
+        val startDate   = intent.getStringExtra("START_DATE") ?: ""
+        val endDate     = intent.getStringExtra("END_DATE") ?: ""
+        bandStatus      = intent.getStringExtra("BAND_STATUS") ?: "PLANNING"
+        overseas        = intent.getBooleanExtra("OVERSEAS", false)
         val destination = intent.getStringExtra("DESTINATION") ?: ""
 
         val toolbar = findViewById<MaterialToolbar>(R.id.toolbar)
@@ -49,6 +48,11 @@ class SubActivity : AppCompatActivity() {
         loadFragment(HomeFragment.newInstance(bandId, roomName, inviteCode, startDate, endDate, bandStatus, destination))
 
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottom_navigation)
+        ViewCompat.setOnApplyWindowInsetsListener(bottomNav) { v, insets ->
+            val navBar = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
+            v.setPadding(0, 0, 0, navBar.bottom)
+            insets
+        }
         bottomNav.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.tab_home     -> loadFragment(HomeFragment.newInstance(bandId, roomName, inviteCode, startDate, endDate, bandStatus, destination))
@@ -61,10 +65,12 @@ class SubActivity : AppCompatActivity() {
         }
     }
 
+    @Suppress("OVERRIDE_DEPRECATION")
     override fun onBackPressed() {
         if (supportFragmentManager.backStackEntryCount > 0) {
             supportFragmentManager.popBackStack()
         } else {
+            @Suppress("DEPRECATION")
             super.onBackPressed()
         }
     }
@@ -75,7 +81,6 @@ class SubActivity : AppCompatActivity() {
         bandStatus = status
     }
 
-    // 홈에서 "투표하기" 클릭 시 VoteFragment를 백스택에 올림 → 뒤로가기로 복귀
     fun switchToVoteTab() {
         supportFragmentManager.beginTransaction()
             .replace(R.id.fragment_container, VoteFragment.newInstance(bandId))

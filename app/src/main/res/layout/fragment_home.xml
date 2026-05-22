@@ -381,7 +381,7 @@
                 android:layout_marginHorizontal="20dp"
                 android:layout_marginBottom="8dp"
                 android:visibility="gone"
-                app:cardBackgroundColor="@color/primary_container"
+                app:cardBackgroundColor="@color/primary_dark"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="0dp"
                 app:strokeWidth="0dp">
@@ -396,7 +396,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="방장 전용"
-                        android:textColor="@color/on_primary_container"
+                        android:textColor="@android:color/white"
                         android:textSize="12sp"
                         android:layout_marginBottom="8dp" />
 
