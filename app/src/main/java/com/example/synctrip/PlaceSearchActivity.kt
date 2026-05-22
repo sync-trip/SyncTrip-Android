@@ -21,8 +21,12 @@ import com.example.synctrip.dto.group.PlacePickResponse
 import com.example.synctrip.dto.kakao.PlaceDocument
 import com.example.synctrip.dto.kakao.PlaceSearchResponse
 import com.example.synctrip.dto.place.PlaceSearchResult
+import com.example.synctrip.adapter.CartPickAdapter
 import com.google.android.material.appbar.MaterialToolbar
+import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.card.MaterialCardView
 import com.google.android.material.chip.ChipGroup
+import com.google.android.material.snackbar.Snackbar
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -40,6 +44,7 @@ class PlaceSearchActivity : AppCompatActivity() {
     private var maxPickCount = 5
     private val pickedExternalIds = mutableSetOf<String>()
     private var isSearching = false
+    private lateinit var cartCard: MaterialCardView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -87,10 +92,13 @@ class PlaceSearchActivity : AppCompatActivity() {
                 R.id.chipNature   -> "NATURE"
                 else              -> null
             }
-            if (overseas) searchOverseasPlaces() else applyFilter()
+            applyFilter()
         }
 
         loadPickCount()
+
+        cartCard = findViewById(R.id.layoutCartBar)
+        cartCard.setOnClickListener { showCartBottomSheet() }
     }
 
     private fun searchPlaces(query: String) {
@@ -121,7 +129,8 @@ class PlaceSearchActivity : AppCompatActivity() {
         if (keyword == null) return
         isSearching = true
         loadingOverlay.visibility = View.VISIBLE
-        RetrofitClient.api.searchOverseasPlaces(bandId, keyword, currentCategory)
+        // category는 항상 null로 전송 — 전체 결과를 받아 로컬에서 필터링
+        RetrofitClient.api.searchOverseasPlaces(bandId, keyword, null)
             .enqueue(object : Callback<List<PlaceSearchResult>> {
                 override fun onResponse(call: Call<List<PlaceSearchResult>>, response: Response<List<PlaceSearchResult>>) {
                     isSearching = false
@@ -129,9 +138,8 @@ class PlaceSearchActivity : AppCompatActivity() {
                     if (response.isSuccessful) {
                         val results = response.body() ?: emptyList()
                         allResults.clear()
-                        filteredResults.clear()
-                        filteredResults.addAll(results.map { it.toPlaceDocument() })
-                        adapter.notifyDataSetChanged()
+                        allResults.addAll(results.map { it.toPlaceDocument() })
+                        applyFilter()
                     } else {
                         android.widget.Toast.makeText(this@PlaceSearchActivity, "검색 실패: ${response.code()}", android.widget.Toast.LENGTH_SHORT).show()
                     }
@@ -166,13 +174,18 @@ class PlaceSearchActivity : AppCompatActivity() {
         adapter.notifyDataSetChanged()
     }
 
-    private fun matchesCategory(categoryName: String, tab: String): Boolean = when (tab) {
-        "FOOD"     -> categoryName.contains("음식") || categoryName.contains("식당") || categoryName.contains("카페") || categoryName.contains("제과")
-        "CULTURE"  -> categoryName.contains("관광") || categoryName.contains("문화") || categoryName.contains("박물관") || categoryName.contains("미술관") || categoryName.contains("역사")
-        "ACTIVITY" -> categoryName.contains("스포츠") || categoryName.contains("레저") || categoryName.contains("오락") || categoryName.contains("테마파크")
-        "SHOPPING" -> categoryName.contains("쇼핑") || categoryName.contains("마트") || categoryName.contains("백화점") || categoryName.contains("시장")
-        "NATURE"   -> categoryName.contains("공원") || categoryName.contains("산") || categoryName.contains("해변") || categoryName.contains("자연")
-        else       -> true
+    private fun matchesCategory(categoryName: String, tab: String): Boolean {
+        // 해외 결과: 백엔드가 반환하는 PlaceCategory enum 이름과 직접 비교
+        if (categoryName == tab) return true
+        // 국내 결과: 카카오 카테고리 문자열(한국어) 키워드 매핑
+        return when (tab) {
+            "FOOD"     -> categoryName.contains("음식") || categoryName.contains("식당") || categoryName.contains("카페") || categoryName.contains("제과")
+            "CULTURE"  -> categoryName.contains("관광") || categoryName.contains("문화") || categoryName.contains("박물관") || categoryName.contains("미술관") || categoryName.contains("역사")
+            "ACTIVITY" -> categoryName.contains("스포츠") || categoryName.contains("레저") || categoryName.contains("오락") || categoryName.contains("테마파크")
+            "SHOPPING" -> categoryName.contains("쇼핑") || categoryName.contains("마트") || categoryName.contains("백화점") || categoryName.contains("시장")
+            "NATURE"   -> categoryName.contains("공원") || categoryName.contains("산") || categoryName.contains("해변") || categoryName.contains("자연")
+            else       -> true
+        }
     }
 
     private fun addPick(place: PlaceDocument) {
@@ -182,7 +195,9 @@ class PlaceSearchActivity : AppCompatActivity() {
             return
         }
         if (currentPickCount >= maxPickCount) {
-            android.widget.Toast.makeText(this, "장소를 ${maxPickCount}개 모두 담았어요!\n더 담으려면 홈에서 기존 장소를 삭제해주세요.", android.widget.Toast.LENGTH_LONG).show()
+            Snackbar.make(cartCard, "장소를 ${maxPickCount}개 모두 담았어요!", Snackbar.LENGTH_SHORT)
+                .setAnchorView(cartCard)
+                .show()
             return
         }
         val request = PlacePickRequest(
@@ -201,13 +216,15 @@ class PlaceSearchActivity : AppCompatActivity() {
                 override fun onResponse(call: Call<PlacePickResponse>, response: Response<PlacePickResponse>) {
                     when {
                         response.isSuccessful -> {
-                            android.widget.Toast.makeText(this@PlaceSearchActivity, "${place.place_name} 담았어요!", android.widget.Toast.LENGTH_SHORT).show()
+                            Snackbar.make(cartCard, "${place.place_name} 담았어요!", Snackbar.LENGTH_SHORT)
+                                .setAnchorView(cartCard)
+                                .show()
                             pickedExternalIds.add(place.id)
                             currentPickCount++
                             updateCartBadge()
                         }
-                        response.code() == 403 -> android.widget.Toast.makeText(this@PlaceSearchActivity, "투표가 시작돼서 장소를 더 담을 수 없어요", android.widget.Toast.LENGTH_SHORT).show()
-                        response.code() == 409 -> android.widget.Toast.makeText(this@PlaceSearchActivity, "이미 담은 장소예요", android.widget.Toast.LENGTH_SHORT).show()
+                        response.code() == 403 -> android.widget.Toast.makeText(this@PlaceSearchActivity, "투표 이후 합류한 멤버는 장소를 담을 수 없어요", android.widget.Toast.LENGTH_SHORT).show()
+                        response.code() == 409 -> android.widget.Toast.makeText(this@PlaceSearchActivity, "일정이 이미 생성됐어요. 장소를 더 담을 수 없어요", android.widget.Toast.LENGTH_SHORT).show()
                         response.code() == 400 -> android.widget.Toast.makeText(this@PlaceSearchActivity, "장소는 최대 ${maxPickCount}개까지 담을 수 있어요", android.widget.Toast.LENGTH_SHORT).show()
                         else -> android.widget.Toast.makeText(this@PlaceSearchActivity, "담기 실패 (${response.code()})", android.widget.Toast.LENGTH_SHORT).show()
                     }
@@ -253,6 +270,51 @@ class PlaceSearchActivity : AppCompatActivity() {
                 ?: "https://place.map.kakao.com/${place.id}"
         }
         startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+    }
+
+    private fun showCartBottomSheet() {
+        val sheet = BottomSheetDialog(this)
+        val sheetView = layoutInflater.inflate(R.layout.bottom_sheet_cart, null)
+        sheet.setContentView(sheetView)
+
+        val rvCart = sheetView.findViewById<RecyclerView>(R.id.rvCartPicks)
+        rvCart.layoutManager = LinearLayoutManager(this)
+
+        RetrofitClient.api.getPicks(bandId).enqueue(object : Callback<PlacePickListResponse> {
+            override fun onResponse(call: Call<PlacePickListResponse>, response: Response<PlacePickListResponse>) {
+                if (!response.isSuccessful) return
+                val data = response.body() ?: return
+                sheetView.findViewById<TextView>(R.id.tvCartTitle).text =
+                    "내 장바구니 (${data.currentCount}/${data.maxCount})"
+                rvCart.adapter = CartPickAdapter(data.items.toMutableList()) { pick ->
+                    deletePickFromSheet(pick, sheet, rvCart)
+                }
+            }
+            override fun onFailure(call: Call<PlacePickListResponse>, t: Throwable) {
+                android.widget.Toast.makeText(this@PlaceSearchActivity, "목록 불러오기 실패", android.widget.Toast.LENGTH_SHORT).show()
+            }
+        })
+
+        sheet.show()
+    }
+
+    private fun deletePickFromSheet(pick: PlacePickResponse, sheet: BottomSheetDialog, rvCart: RecyclerView) {
+        RetrofitClient.api.deletePick(bandId, pick.placeId).enqueue(object : Callback<Void> {
+            override fun onResponse(call: Call<Void>, response: Response<Void>) {
+                if (!response.isSuccessful) {
+                    android.widget.Toast.makeText(this@PlaceSearchActivity, "삭제 실패 (${response.code()})", android.widget.Toast.LENGTH_SHORT).show()
+                    return
+                }
+                pickedExternalIds.remove(pick.externalId)
+                currentPickCount--
+                updateCartBadge()
+                (rvCart.adapter as? CartPickAdapter)?.removeItem(pick.placeId)
+                if (currentPickCount == 0) sheet.dismiss()
+            }
+            override fun onFailure(call: Call<Void>, t: Throwable) {
+                android.widget.Toast.makeText(this@PlaceSearchActivity, "서버 연결 실패", android.widget.Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 
     private fun kakaoToCategory(categoryName: String): String = when {

@@ -128,15 +128,21 @@ class HomeFragment : Fragment() {
 
         // 장소 담기 / 투표 이동
         view.findViewById<View>(R.id.layoutParticipate).setOnClickListener {
-            if (currentPickCount >= maxPickCount) {
-                Toast.makeText(requireContext(), "장소를 ${maxPickCount}개 모두 담았어요! 투표로 이동할게요.", Toast.LENGTH_SHORT).show()
-                (activity as? SubActivity)?.switchToVoteTab()
-            } else {
-                val overseas = (activity as? SubActivity)?.isOverseas() ?: false
-                startActivity(Intent(requireContext(), PlaceSearchActivity::class.java).apply {
-                    putExtra("BAND_ID", bandId)
-                    putExtra("OVERSEAS", overseas)
-                })
+            when (bandStatus) {
+                "GENERATING" -> Toast.makeText(requireContext(), "일정을 생성 중이에요. 잠시만 기다려주세요!", Toast.LENGTH_SHORT).show()
+                "TRAVELLING", "DONE" -> Toast.makeText(requireContext(), "일정이 이미 생성됐어요. 일정 탭을 확인해보세요!", Toast.LENGTH_SHORT).show()
+                else -> {
+                    if (currentPickCount >= maxPickCount) {
+                        Toast.makeText(requireContext(), "장소를 ${maxPickCount}개 모두 담았어요! 투표로 이동할게요.", Toast.LENGTH_SHORT).show()
+                        (activity as? SubActivity)?.switchToVoteTab()
+                    } else {
+                        val overseas = (activity as? SubActivity)?.isOverseas() ?: false
+                        startActivity(Intent(requireContext(), PlaceSearchActivity::class.java).apply {
+                            putExtra("BAND_ID", bandId)
+                            putExtra("OVERSEAS", overseas)
+                        })
+                    }
+                }
             }
         }
 

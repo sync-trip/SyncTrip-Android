@@ -16,6 +16,8 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
+import com.example.synctrip.dto.notification.FcmTokenRequest
+import com.google.firebase.messaging.FirebaseMessaging
 import com.kakao.sdk.common.KakaoSdk
 import com.kakao.sdk.user.UserApiClient
 import com.kakao.vectormap.KakaoMapSdk
@@ -146,9 +148,20 @@ class LoginActivity : AppCompatActivity() {
                 body.userId,
                 body.accessTokenExpiresIn
             )
+            registerFcmToken()
         }
         Toast.makeText(this, "로그인 성공!", Toast.LENGTH_SHORT).show()
         goToMain()
+    }
+
+    private fun registerFcmToken() {
+        FirebaseMessaging.getInstance().token.addOnSuccessListener { token ->
+            RetrofitClient.api.registerFcmToken(FcmTokenRequest(token))
+                .enqueue(object : Callback<Void> {
+                    override fun onResponse(call: Call<Void>, response: Response<Void>) {}
+                    override fun onFailure(call: Call<Void>, t: Throwable) {}
+                })
+        }
     }
 
     private fun refreshAndGoToMain(refreshToken: String) {

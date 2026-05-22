@@ -40,14 +40,14 @@
                     android:textSize="22sp"
                     android:textStyle="bold" />
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnLogout"
-                    style="@style/Widget.Material3.Button.TextButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="36dp"
-                    android:text="로그아웃"
-                    android:textSize="13sp"
-                    android:textColor="@color/text_secondary" />
+                <ImageButton
+                    android:id="@+id/btnMenu"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:src="@drawable/ic_menu"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:tint="@color/text_primary"
+                    android:contentDescription="메뉴" />
 
             </LinearLayout>
 

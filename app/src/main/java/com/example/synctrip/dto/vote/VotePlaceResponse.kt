@@ -10,5 +10,6 @@ data class VotePlaceResponse(
     val address: String,
     val rating: Float?,
     val thumbnailUrl: String?,
-    val myBookmark: Boolean
+    val myBookmark: Boolean,
+    val myVoteResult: Int?  // null=미투표, 1=좋아요, -1=싫어요, 0=자동좋아요(내 북마크)
 )

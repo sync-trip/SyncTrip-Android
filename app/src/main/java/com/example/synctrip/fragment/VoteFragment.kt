@@ -85,13 +85,24 @@ class VoteFragment : Fragment() {
                 override fun onResponse(call: Call<List<VotePlaceResponse>>, response: Response<List<VotePlaceResponse>>) {
                     if (!isAdded) return
                     if (response.isSuccessful) {
-                        places.clear()
-                        places.addAll(response.body() ?: emptyList())
+                        val allPlaces = response.body() ?: emptyList()
 
-                        // 내가 담은 장소 → UI 자동 좋아요 + 서버에도 투표 전송
-                        places.filter { it.myBookmark }.forEach { place ->
-                            votedMap[place.placeId] = 1
-                            autoLike(place.placeId)
+                        // 내가 담은 장소는 목록에서 숨기고 자동 좋아요만 처리
+                        places.clear()
+                        places.addAll(allPlaces.filter { !it.myBookmark })
+
+                        votedMap.clear()
+                        allPlaces.forEach { place ->
+                            when (place.myVoteResult) {
+                                0, 1 -> votedMap[place.placeId] = 1
+                                -1   -> votedMap[place.placeId] = -1
+                                null -> {
+                                    if (place.myBookmark) {
+                                        votedMap[place.placeId] = 1
+                                        autoLike(place.placeId)
+                                    }
+                                }
+                            }
                         }
 
                         adapter.notifyDataSetChanged()

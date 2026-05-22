@@ -99,20 +99,35 @@ class MainActivity : AppCompatActivity() {
                 .show()
         }
 
-        findViewById<View>(R.id.btnLogout).setOnClickListener {
-            android.app.AlertDialog.Builder(this)
-                .setTitle("로그아웃")
-                .setMessage("정말 로그아웃 할까요?")
-                .setPositiveButton("로그아웃") { _, _ ->
-                    TokenManager.clear(this)
-                    val intent = Intent(this, LoginActivity::class.java)
-                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    startActivity(intent)
+        findViewById<View>(R.id.btnMenu).setOnClickListener { anchor ->
+            val popup = PopupMenu(this, anchor)
+            popup.menuInflater.inflate(R.menu.menu_main, popup.menu)
+            popup.setOnMenuItemClickListener { item ->
+                when (item.itemId) {
+                    R.id.menuLogout  -> { showLogoutDialog(); true }
+                    R.id.menuProfile -> { android.widget.Toast.makeText(this, "준비 중입니다", android.widget.Toast.LENGTH_SHORT).show(); true }
+                    R.id.menuPassport -> { android.widget.Toast.makeText(this, "준비 중입니다", android.widget.Toast.LENGTH_SHORT).show(); true }
+                    R.id.menuSettings -> { android.widget.Toast.makeText(this, "준비 중입니다", android.widget.Toast.LENGTH_SHORT).show(); true }
+                    else -> false
                 }
-                .setNegativeButton("취소", null)
-                .show()
+            }
+            popup.show()
         }
 
+    }
+
+    private fun showLogoutDialog() {
+        android.app.AlertDialog.Builder(this)
+            .setTitle("로그아웃")
+            .setMessage("정말 로그아웃 할까요?")
+            .setPositiveButton("로그아웃") { _, _ ->
+                TokenManager.clear(this)
+                val intent = Intent(this, LoginActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                startActivity(intent)
+            }
+            .setNegativeButton("취소", null)
+            .show()
     }
 
     override fun onNewIntent(intent: Intent) {

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/menuProfile"  android:title="내 프로필" />
+    <item android:id="@+id/menuPassport" android:title="여권" />
+    <item android:id="@+id/menuSettings" android:title="설정" />
+    <item android:id="@+id/menuLogout"   android:title="로그아웃" />
+</menu>

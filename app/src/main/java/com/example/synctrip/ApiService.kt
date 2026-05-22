@@ -23,6 +23,7 @@ import com.example.synctrip.dto.vote.GroupVoteStatusResponse
 import com.example.synctrip.dto.vote.VotePlaceResponse
 import com.example.synctrip.dto.vote.VoteRequest
 import com.example.synctrip.dto.vote.VoteResponse
+import com.example.synctrip.dto.notification.FcmTokenRequest
 import com.example.synctrip.dto.vote.VoteStatusResponse
 import retrofit2.Call
 import retrofit2.http.Body
@@ -139,4 +140,9 @@ interface ApiService {
 
     @GET("api/bands/{bandId}/schedule/alts")
     fun getScheduleAlts(@Path("bandId") bandId: Long): Call<List<ScheduleAltResponse>>
+
+    // ─── Notifications ──────────────────────────────────────────────────────
+
+    @POST("api/users/fcm-token")
+    fun registerFcmToken(@Body request: FcmTokenRequest): Call<Void>
 }
