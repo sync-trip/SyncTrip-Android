@@ -4,15 +4,18 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.bumptech.glide.Glide
 import com.example.synctrip.R
 import com.example.synctrip.RetrofitClient
 import com.example.synctrip.adapter.ScheduleAdapter
 import com.example.synctrip.dto.Schedule
+import com.example.synctrip.dto.destination.DestinationCatalog
 import com.example.synctrip.dto.schedule.ScheduleDayResponse
 import com.example.synctrip.dto.schedule.ScheduleResponse
 import com.google.android.material.tabs.TabLayout
@@ -23,11 +26,27 @@ import retrofit2.Response
 class ScheduleFragment : Fragment() {
 
     private var bandId: Long = -1L
+    private var destination: String = ""
+    private var startDate: String = ""
+    private var endDate: String = ""
+    private var bandName: String = ""
 
     companion object {
-        fun newInstance(bandId: Long): ScheduleFragment {
+        fun newInstance(
+            bandId: Long,
+            destination: String = "",
+            startDate: String = "",
+            endDate: String = "",
+            bandName: String = ""
+        ): ScheduleFragment {
             return ScheduleFragment().apply {
-                arguments = Bundle().apply { putLong("BAND_ID", bandId) }
+                arguments = Bundle().apply {
+                    putLong("BAND_ID", bandId)
+                    putString("DESTINATION", destination)
+                    putString("START_DATE", startDate)
+                    putString("END_DATE", endDate)
+                    putString("BAND_NAME", bandName)
+                }
             }
         }
     }
@@ -40,6 +59,12 @@ class ScheduleFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         bandId = arguments?.getLong("BAND_ID") ?: -1L
+        destination = arguments?.getString("DESTINATION") ?: ""
+        startDate = arguments?.getString("START_DATE") ?: ""
+        endDate = arguments?.getString("END_DATE") ?: ""
+        bandName = arguments?.getString("BAND_NAME") ?: ""
+
+        setupHeader(view)
 
         val rvScheduleList = view.findViewById<RecyclerView>(R.id.rvScheduleList)
         val tabLayout = view.findViewById<TabLayout>(R.id.tabLayout)
@@ -61,6 +86,37 @@ class ScheduleFragment : Fragment() {
         loadSchedule(rvScheduleList, tabLayout, tvEmpty)
     }
 
+    private fun setupHeader(view: View) {
+        val tvTitle = view.findViewById<TextView>(R.id.tvScheduleTitle)
+        val tvDates = view.findViewById<TextView>(R.id.tvScheduleHeaderDates)
+        val ivHero = view.findViewById<ImageView>(R.id.ivScheduleHero)
+
+        // 제목: 밴드명 or 목적지 도시명 기반
+        val cityName = if (destination.isNotEmpty()) {
+            val parts = destination.split(" ")
+            if (parts.size >= 2) parts.drop(1).joinToString(" ") else destination
+        } else bandName
+        tvTitle.text = if (cityName.isNotEmpty()) "$cityName 여행 일정" else "여행 일정"
+
+        // 날짜 표시
+        if (startDate.isNotEmpty() && endDate.isNotEmpty()) {
+            val s = startDate.take(10).replace("-", ".")
+            val e = endDate.take(10).replace("-", ".")
+            tvDates.text = "$s – $e"
+        }
+
+        // 목적지 썸네일 (DestinationCatalog에서 검색)
+        if (cityName.isNotEmpty()) {
+            val dest = DestinationCatalog.ALL.firstOrNull { it.name == cityName }
+            if (dest?.thumbnailUrl != null) {
+                Glide.with(this)
+                    .load(dest.thumbnailUrl)
+                    .centerCrop()
+                    .into(ivHero)
+            }
+        }
+    }
+
     private fun loadSchedule(rvScheduleList: RecyclerView, tabLayout: TabLayout, tvEmpty: TextView, onDone: (() -> Unit)? = null) {
         RetrofitClient.api.getSchedule(bandId)
             .enqueue(object : Callback<ScheduleResponse> {
@@ -74,6 +130,15 @@ class ScheduleFragment : Fragment() {
                         if (allDays.isEmpty()) {
                             showEmpty(rvScheduleList, tvEmpty)
                             return
+                        }
+
+                        // 날짜 헤더 업데이트 (인텐트로 받은 날짜가 없을 때 API 응답으로 갱신)
+                        if (startDate.isEmpty() && scheduleResponse.startDate.isNotEmpty()) {
+                            view?.findViewById<TextView>(R.id.tvScheduleHeaderDates)?.let { tv ->
+                                val s = scheduleResponse.startDate.take(10).replace("-", ".")
+                                val e = scheduleResponse.endDate.take(10).replace("-", ".")
+                                tv.text = "$s – $e"
+                            }
                         }
 
                         tvEmpty.visibility = View.GONE
@@ -118,7 +183,8 @@ class ScheduleFragment : Fragment() {
                 time = slot.startTime?.take(5) ?: "--:--",
                 placeName = slot.place.name,
                 duration = slot.durationMinutes ?: 60,
-                travelTime = slot.travelTimeFromPrev ?: 0
+                travelTime = slot.travelTimeFromPrev ?: 0,
+                category = slot.place.category
             )
         }
     }

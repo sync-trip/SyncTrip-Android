@@ -1,8 +1,9 @@
 package com.example.synctrip.dto
 
 data class Expense(
-    val itemName: String,      // 항목명
-    val amount: Int,           // 금액
-    val payer: String,         // 결제자
-    val members: List<String>  // 분담자 목록
+    val itemName: String,
+    val amount: Int,
+    val payer: String,
+    val members: List<String>,
+    val category: String = "FOOD"
 )

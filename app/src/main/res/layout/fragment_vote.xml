@@ -18,7 +18,7 @@
         android:paddingTop="28dp"
         android:paddingBottom="40dp">
 
-        <!-- Timer chip -->
+        <!-- 투표 진행 상태 칩 -->
         <TextView
             android:id="@+id/tvVoteTimer"
             android:layout_width="wrap_content"
@@ -27,32 +27,33 @@
             android:background="@drawable/bg_timer_chip"
             android:paddingHorizontal="16dp"
             android:paddingVertical="8dp"
-            android:text="투표 종료까지 02:45"
-            android:textColor="@color/on_primary_container"
+            android:text="장소 목록 불러오는 중..."
+            android:textColor="@color/primary"
             android:textSize="13sp"
             android:textStyle="bold" />
 
-        <!-- Title -->
+        <!-- 타이틀 -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="숙소 블라인드 투표"
+            android:text="어디로 갈까요?"
             android:textColor="@color/text_primary"
             android:textSize="28sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:letterSpacing="-0.01" />
 
-        <!-- Subtitle -->
+        <!-- 서브타이틀 -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="선입견 없이 가장 마음에 드는 조건을 선택해주세요."
+            android:text="담은 장소에 좋아요/별로에요로 의견을 남겨주세요."
             android:textColor="@color/text_secondary"
             android:textSize="14sp"
             android:lineSpacingMultiplier="1.4" />
 
-        <!-- Vote option list -->
+        <!-- 투표 목록 -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvVoteOptions"
             android:layout_width="match_parent"

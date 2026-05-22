@@ -12,7 +12,7 @@
         android:layout_height="wrap_content"
         app:cardBackgroundColor="@color/surface_lowest"
         app:cardCornerRadius="200dp"
-        app:cardElevation="2dp"
+        app:cardElevation="0dp"
         app:strokeWidth="2.5dp"
         app:strokeColor="@color/primary">
 
@@ -21,15 +21,19 @@
             android:layout_height="match_parent"
             android:orientation="vertical"
             android:gravity="center"
-            android:padding="20dp">
+            android:paddingVertical="20dp"
+            android:paddingHorizontal="12dp">
 
+            <!-- 플래그 이모지 -->
             <TextView
                 android:id="@+id/tvStampIcon"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="✈️"
-                android:textSize="28sp" />
+                android:textSize="26sp"
+                android:includeFontPadding="false" />
 
+            <!-- 도시명 -->
             <TextView
                 android:id="@+id/tvStampCity"
                 android:layout_width="wrap_content"
@@ -37,12 +41,13 @@
                 android:layout_marginTop="6dp"
                 android:text="도쿄"
                 android:textColor="@color/text_primary"
-                android:textSize="18sp"
+                android:textSize="17sp"
                 android:textStyle="bold"
                 android:gravity="center"
                 android:maxLines="1"
                 android:ellipsize="end" />
 
+            <!-- 국가명 -->
             <TextView
                 android:id="@+id/tvStampCountry"
                 android:layout_width="wrap_content"
@@ -53,13 +58,15 @@
                 android:textSize="11sp"
                 android:gravity="center" />
 
+            <!-- 구분선 -->
             <View
-                android:layout_width="32dp"
+                android:layout_width="28dp"
                 android:layout_height="1dp"
                 android:layout_marginTop="8dp"
                 android:layout_marginBottom="4dp"
                 android:background="@color/outline_variant" />
 
+            <!-- 날짜 -->
             <TextView
                 android:id="@+id/tvStampDate"
                 android:layout_width="wrap_content"

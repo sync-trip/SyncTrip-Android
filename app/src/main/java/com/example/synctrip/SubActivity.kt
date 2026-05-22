@@ -52,7 +52,7 @@ class SubActivity : AppCompatActivity() {
         bottomNav.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.tab_home     -> loadFragment(HomeFragment.newInstance(bandId, roomName, inviteCode, startDate, endDate, bandStatus, destination))
-                R.id.tab_schedule -> loadFragment(ScheduleFragment.newInstance(bandId))
+                R.id.tab_schedule -> loadFragment(ScheduleFragment.newInstance(bandId, destination, startDate, endDate, roomName))
                 R.id.tab_passport -> loadFragment(PassportFragment())
                 R.id.tab_money    -> loadFragment(MoneyFragment())
                 R.id.tab_photo    -> loadFragment(PhotoFragment())

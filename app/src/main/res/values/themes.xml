@@ -1,14 +1,20 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.TestAppJSH" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
+    <style name="Base.Theme.SyncTrip" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryDark">@color/primary_dark</item>
         <item name="android:colorBackground">@color/background</item>
         <item name="colorSurface">@color/surface</item>
+        <item name="colorSecondary">@color/secondary</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorPrimaryContainer">@color/primary_container</item>
+        <item name="colorOnPrimaryContainer">@color/on_primary_container</item>
     </style>
 
-    <style name="Theme.TestAppJSH" parent="Base.Theme.TestAppJSH" />
+    <style name="Theme.SyncTrip" parent="Base.Theme.SyncTrip" />
+
+    <!-- 이전 코드 호환성 유지 -->
+    <style name="Theme.TestAppJSH" parent="Theme.SyncTrip" />
+    <style name="Base.Theme.TestAppJSH" parent="Base.Theme.SyncTrip" />
 
     <style name="HeroShapeAppearance" parent="ShapeAppearance.Material3.LargeComponent">
         <item name="cornerFamilyTopLeft">cut</item>
@@ -19,5 +25,22 @@
         <item name="cornerFamilyBottomRight">rounded</item>
         <item name="cornerSizeBottomLeft">28dp</item>
         <item name="cornerSizeBottomRight">28dp</item>
+    </style>
+
+    <style name="TextAppearance.SyncTrip.Display" parent="TextAppearance.Material3.DisplayMedium">
+        <item name="android:textSize">36sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">-0.02</item>
+    </style>
+
+    <style name="TextAppearance.SyncTrip.Headline" parent="TextAppearance.Material3.HeadlineMedium">
+        <item name="android:textSize">24sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <!-- 칩 스타일: 선택됐을 때 primary 배경 -->
+    <style name="Widget.SyncTrip.Chip.Filter" parent="Widget.Material3.Chip.Filter">
+        <item name="chipBackgroundColor">@color/surface_container_low</item>
+        <item name="checkedIconVisible">false</item>
     </style>
 </resources>

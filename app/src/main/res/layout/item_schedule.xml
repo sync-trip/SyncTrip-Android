@@ -5,56 +5,76 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:paddingHorizontal="16dp"
+    android:paddingHorizontal="20dp"
     android:paddingTop="8dp">
 
     <!-- 타임라인 행 -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="top"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:gravity="top">
 
-        <!-- 왼쪽: 시간 + 타임라인 점 -->
+        <!-- 왼쪽: 카테고리 아이콘 원 + 세로선 -->
         <LinearLayout
-            android:layout_width="64dp"
+            android:layout_width="44dp"
             android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:gravity="center_horizontal">
 
-            <TextView
-                android:id="@+id/tvTime"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="09:00"
-                android:textColor="@color/primary"
-                android:textSize="13sp"
-                android:textStyle="bold" />
+            <!-- 아이콘 원 -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardIcon"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                app:cardBackgroundColor="@color/primary"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="0dp">
 
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <TextView
+                        android:id="@+id/tvCategoryIcon"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="📍"
+                        android:textSize="18sp"
+                        android:includeFontPadding="false"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- 세로 연결선 (마지막 아이템에서 코드로 숨김) -->
             <View
+                android:id="@+id/viewTimeLine"
                 android:layout_width="2dp"
-                android:layout_height="10dp"
+                android:layout_height="24dp"
                 android:layout_marginTop="4dp"
-                android:background="@color/divider" />
-
-            <View
-                android:layout_width="10dp"
-                android:layout_height="10dp"
-                android:background="@color/primary" />
+                android:background="@color/outline_variant" />
 
         </LinearLayout>
 
-        <!-- 오른쪽: 장소 카드 -->
+        <!-- 오른쪽: 카드 내용 -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardPlace"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
+            android:layout_marginStart="12dp"
             android:layout_weight="1"
-            app:cardBackgroundColor="@color/surface"
+            android:layout_marginBottom="4dp"
+            app:cardBackgroundColor="@color/surface_lowest"
             app:cardCornerRadius="14dp"
-            app:cardElevation="2dp"
-            app:strokeWidth="0dp">
+            app:cardElevation="0dp"
+            app:strokeColor="@color/outline_variant"
+            app:strokeWidth="0.5dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -62,15 +82,41 @@
                 android:orientation="vertical"
                 android:padding="14dp">
 
-                <TextView
-                    android:id="@+id/tvPlaceName"
-                    android:layout_width="wrap_content"
+                <!-- 장소명 + 시간 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="경복궁"
-                    android:textColor="@color/text_primary"
-                    android:textSize="15sp"
-                    android:textStyle="bold" />
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
 
+                    <TextView
+                        android:id="@+id/tvPlaceName"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="장소명"
+                        android:textColor="@color/text_primary"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:maxLines="1"
+                        android:ellipsize="end" />
+
+                    <TextView
+                        android:id="@+id/tvTime"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:background="@drawable/bg_tag_chip"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="4dp"
+                        android:text="09:00"
+                        android:textColor="@color/primary"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+
+                </LinearLayout>
+
+                <!-- 체류시간 -->
                 <TextView
                     android:id="@+id/tvDuration"
                     android:layout_width="wrap_content"
@@ -80,6 +126,7 @@
                     android:textColor="@color/text_secondary"
                     android:textSize="13sp" />
 
+                <!-- 경고 배지 -->
                 <TextView
                     android:id="@+id/tvWarning"
                     android:layout_width="wrap_content"
@@ -99,29 +146,24 @@
 
     </LinearLayout>
 
-    <!-- 이동 시간 표시 -->
+    <!-- 이동시간 행 -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:paddingVertical="6dp">
+        android:gravity="center_vertical"
+        android:paddingBottom="4dp">
 
-        <View
-            android:layout_width="29dp"
-            android:layout_height="1dp" />
-
-        <View
-            android:layout_width="2dp"
-            android:layout_height="20dp"
-            android:background="@color/divider" />
+        <!-- 왼쪽 여백 (아이콘 원 너비 맞춤) -->
+        <View android:layout_width="44dp" android:layout_height="1dp" />
 
         <TextView
             android:id="@+id/tvTravelTime"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
-            android:text="이동 15분"
+            android:drawablePadding="4dp"
+            android:text="↓ 이동 15분"
             android:textColor="@color/text_hint"
             android:textSize="12sp" />
 

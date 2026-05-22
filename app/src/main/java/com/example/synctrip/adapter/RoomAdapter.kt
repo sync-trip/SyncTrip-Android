@@ -4,10 +4,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.example.synctrip.R
 import com.example.synctrip.dto.Room
+import com.example.synctrip.dto.destination.DestinationCatalog
 
 class RoomAdapter(
     private val roomList: List<Room>,
@@ -29,6 +32,7 @@ class RoomAdapter(
         val tvRoomEmoji: TextView = itemView.findViewById(R.id.tvRoomEmoji)
         val tvMemberBadge: TextView = itemView.findViewById(R.id.tvMemberBadge)
         val flCardBanner: FrameLayout = itemView.findViewById(R.id.flCardBanner)
+        val ivBannerPhoto: ImageView = itemView.findViewById(R.id.ivBannerPhoto)
         val btnViewItinerary: View = itemView.findViewById(R.id.btnViewItinerary)
         val ibRoomOptions: View = itemView.findViewById(R.id.ibRoomOptions)
     }
@@ -46,6 +50,21 @@ class RoomAdapter(
         holder.tvRoomDate.text = formatDateRange(room.startDate, room.endDate)
         holder.tvRoomEmoji.text = destinationEmoji(room.city, room.country)
         holder.flCardBanner.setBackgroundResource(gradients[position % gradients.size])
+
+        // 목적지 실제 사진 로드
+        val thumbUrl = DestinationCatalog.ALL.firstOrNull {
+            it.name == room.city || it.name.contains(room.city) || room.city.contains(it.name)
+        }?.thumbnailUrl
+        if (thumbUrl != null) {
+            holder.tvRoomEmoji.visibility = View.GONE
+            Glide.with(holder.itemView.context)
+                .load(thumbUrl)
+                .centerCrop()
+                .into(holder.ivBannerPhoto)
+        } else {
+            holder.tvRoomEmoji.visibility = View.VISIBLE
+            holder.ivBannerPhoto.setImageDrawable(null)
+        }
         holder.tvMemberBadge.text = if (room.memberCount > 0) "멤버 ${room.memberCount}명" else "멤버"
 
         holder.btnViewItinerary.setOnClickListener { onItemClick(room) }

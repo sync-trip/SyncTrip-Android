@@ -1,5 +1,5 @@
 # SyncTrip Android 구현현황 문서
-**작성일:** 2026-05-22 | **마지막 수정:** 2026-05-22
+**작성일:** 2026-05-22 | **마지막 수정:** 2026-05-22 (v2.1 — Skybound Wanderer UI 테마 적용)
 **참조:** 전체 Android 소스코드 직독(3회 이상) + Spring Boot 백엔드 컨트롤러 코드 대조
 
 > 이 문서는 `com.example.synctrip` 앱의 모든 Activity, Fragment, Adapter, DTO, 인프라 파일을 직접 읽어 작성한 현황 정리서입니다.
@@ -292,11 +292,31 @@
 ### 백엔드에 있으나 ApiService에 없는 엔드포인트
 | 엔드포인트 | 백엔드 컨트롤러 | 우선순위 |
 |-----------|----------------|---------|
-| `GET/POST/DELETE api/bands/{bandId}/expenses` | ExpenseController | 높음 |
+| `GET api/bands/{bandId}/expenses` | ExpenseController | 높음 |
+| `POST api/bands/{bandId}/expenses` | ExpenseController | 높음 |
+| `GET api/bands/{bandId}/expenses/{expenseId}` | ExpenseController | 높음 |
+| `PUT api/bands/{bandId}/expenses/{expenseId}` | ExpenseController | 높음 |
+| `DELETE api/bands/{bandId}/expenses/{expenseId}` | ExpenseController | 높음 |
+| `POST api/bands/{bandId}/expenses/ocr` | ExpenseController | 높음 |
 | `GET api/bands/{bandId}/settlement` | SettlementController | 높음 |
-| `GET/PATCH api/users/{userId}/profile` | UserController | 중간 |
+| `POST api/bands/{bandId}/settlement/request` | SettlementController | 높음 |
+| `POST auth/google/logout` | GoogleAuthController | 중간 |
+| `DELETE auth/google/withdraw` | GoogleAuthController | 중간 |
+| `GET api/users/me` | UserController | 중간 |
+| `PUT api/users/me` | UserController | 중간 |
 | `POST api/users/fcm-token` | NotificationController | 중간 |
-| `GET api/bands/{bandId}/notifications` | NotificationController | 낮음 |
+| `GET api/users/notification-settings` | NotificationController | 중간 |
+| `PATCH api/users/notification-settings` | NotificationController | 중간 |
+| `GET api/notifications` | NotificationController | 낮음 |
+| `GET api/notifications/unread-count` | NotificationController | 낮음 |
+| `PATCH api/notifications/{id}/read` | NotificationController | 낮음 |
+| `PATCH api/notifications/read-all` | NotificationController | 낮음 |
+| `DELETE api/notifications/{id}` | NotificationController | 낮음 |
+| `DELETE api/notifications` | NotificationController | 낮음 |
+| `GET api/bands/{bandId}/finance` | GroupFinanceController | 낮음 |
+| `PUT api/bands/{bandId}/finance/currency` | GroupFinanceController | 낮음 |
+| `POST api/bands/{bandId}/finance/rates/refresh` | GroupFinanceController | 낮음 |
+| `POST api/bands/{bandId}/update` | BandController | 낮음 |
 | `POST api/bands/{bandId}/schedule/plan-b` | ScheduleController | 낮음 |
 | `POST api/bands/{bandId}/schedule/swap` | ScheduleController | 낮음 |
 | `POST api/bands/{bandId}/schedule/edit/start` | ScheduleController | 낮음 |
@@ -306,23 +326,27 @@
 
 ## 16. 미구현 기능 우선순위 요약
 
-### 높음 (핵심 기능 미완성)
-1. **지출/가계부 서버 연동** — `MoneyFragment`가 더미 데이터 상태. `ExpenseController` 백엔드 완성됨
-2. **정산 기능** — `SettlementController` 백엔드 완성됨
-3. **로그아웃 서버 API 호출** — `POST auth/kakao/logout` 미호출 (토큰만 지움)
+### 🔴 높음 (핵심 기능 미완성)
+1. **지출/가계부 서버 연동** — `MoneyFragment`가 더미 데이터 상태. `ExpenseController` 백엔드 완성됨. **선행 조건:** `SubActivity`에서 `MoneyFragment`로 `bandId` 전달 추가 필요
+2. **정산 기능** — `SettlementController` 백엔드 완성됨 (더치페이 알고리즘 포함)
+3. **로그아웃 서버 API 호출** — `POST auth/kakao/logout` 미호출 (로컬 토큰만 삭제, 서버 refresh token 무효화 안 됨)
 
-### 중간 (사용성 개선)
-4. **사진 서버 저장** — `PhotoFragment` 로컬만, 멀티미디어 업로드 미구현
+### 🟡 중간 (사용성 개선)
+4. **사진 서버 저장** — `PhotoFragment` 로컬만, 멀티미디어 업로드 미구현 (백엔드 album_photos 테이블은 있음, Controller 미구현)
 5. **FCM 푸시 알림** — 백엔드 NotificationController 있음, 앱에 FCM 설정 없음
 6. **그룹 투표 현황 UI** — `GroupVoteStatusResponse` DTO 있음, UI만 없음
-7. **회원탈퇴** — `DELETE auth/kakao/withdraw` UI 없음
+7. **회원탈퇴 UI** — `DELETE auth/kakao/withdraw`, `DELETE auth/google/withdraw` UI 없음
+8. **Google 로그아웃/탈퇴 ApiService 추가** — `POST auth/google/logout`, `DELETE auth/google/withdraw` ApiService에 미정의
 
-### 낮음 (고도화)
-8. **일정 대안(Alts) UI** — DTO, API 있음
-9. **일정 편집 (plan-b, swap)** — 백엔드 있음
-10. **초대코드 재발급 버튼** — API 있음
-11. **사용자 프로필 조회/수정**
-12. **`api/destinations/popular`, `api/destinations/search` 활용** — 현재 로컬 카탈로그 사용
+### 🟢 낮음 (고도화)
+9. **일정 대안(Alts) UI** — DTO, API 있음, UI 없음
+10. **일정 편집 (plan-b, swap, edit lock)** — 백엔드 완성됨
+11. **초대코드 재발급 버튼** — API 정의됨, 버튼 없음
+12. **사용자 프로필 조회/수정** — `GET/PUT api/users/me`
+13. **알림 화면** — 전체 Notification API
+14. **그룹 재정/환율** — GroupFinance API
+15. **`api/destinations/popular`, `api/destinations/search` 활용** — 현재 로컬 카탈로그 사용
+16. **WebSocket 재연결 로직** — `VoteStompClient` 네트워크 불안정 대응
 
 ---
 
@@ -349,11 +373,27 @@
 
 ---
 
+---
+
+## 19. 인수인계 문서(v6) 대비 설계 차이 기록
+
+> 인수인계 문서와 실제 구현이 달라진 사항을 여기에 기록한다. 코드가 문서와 다른 방향으로 구현될 때마다 추가.
+
+| 항목 | 인수인계 v6 내용 | 실제 구현 | 사유/비고 |
+|------|----------------|-----------|---------|
+| 알림 방식 | "In-App 알림만 (FCM 미사용)" | 백엔드에 FCM 포함 구현됨 (`FcmService`, `FirebaseConfig`) | 팀원이 FCM도 추가 구현. Android 미연동 상태 |
+| 영수증 OCR | "GPT-4o or Gemini Vision, 추후 결정" | Gemini Vision으로 확정 구현 (`GeminiProperties`) | 백엔드 결정 완료 |
+| Google 토큰 갱신 | 명시 없음 | Google 사용자도 `POST auth/kakao/refresh` 동일 엔드포인트 사용 | 백엔드 단일화 결정 |
+| MoneyFragment bandId | SubActivity 5탭 컨테이너 설계 | MoneyFragment에 bandId 미전달 | 구현 누락, 지출 연동 시 선행 수정 필요 |
+
+---
+
 ## 변경 이력
 
 | 날짜 | 버전 | 변경 내용 |
 |------|------|-----------|
 | 2026-05-22 | v1.0 | 초기 문서 생성 (잘못된 코드 읽기 기반) |
 | 2026-05-22 | v2.0 | **전체 재작성** — 모든 소스 파일 재정독, 현재 코드 기준으로 완전 갱신 |
+| 2026-05-22 | v2.1 | 섹션 15 누락 엔드포인트 보완 (Google auth, 전체 Notification/Finance/Settlement API), 섹션 16 우선순위 개정, 섹션 19 신규 추가 (설계 차이 기록) |
 
 **마지막 수정:** 2026-05-22

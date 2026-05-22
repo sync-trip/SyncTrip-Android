@@ -25,9 +25,9 @@ class MoneyFragment : Fragment() {
 
         // 임시 지출 데이터 (나중에 서버에서 받아올 것)
         val expenseList = mutableListOf(
-            Expense("점심식사", 45000, "김철수", listOf("김철수", "이영희", "박민수")),
-            Expense("택시비", 12000, "이영희", listOf("김철수", "이영희")),
-            Expense("저녁식사", 60000, "박민수", listOf("김철수", "이영희", "박민수"))
+            Expense("점심식사", 45000, "김철수", listOf("김철수", "이영희", "박민수"), "FOOD"),
+            Expense("택시비", 12000, "이영희", listOf("김철수", "이영희"), "TRANSPORT"),
+            Expense("저녁식사", 60000, "박민수", listOf("김철수", "이영희", "박민수"), "FOOD")
         )
 
         // RecyclerView 연결

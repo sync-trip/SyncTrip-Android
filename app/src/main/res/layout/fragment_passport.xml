@@ -17,42 +17,57 @@
         android:orientation="vertical"
         android:paddingBottom="32dp">
 
-        <!-- 헤더 배너 -->
-        <LinearLayout
+        <!-- 헤더: 배경 이미지 + 그라데이션 -->
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:paddingVertical="36dp"
-            android:paddingHorizontal="24dp"
-            android:background="@color/primary">
+            android:layout_height="180dp">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="🛂"
-                android:textSize="48sp" />
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:background="@drawable/bg_hero_gradient"
+                android:contentDescription="@null" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:text="My Passport"
-                android:textColor="@android:color/white"
-                android:textSize="28sp"
-                android:textStyle="bold"
-                android:letterSpacing="-0.02" />
+            <!-- 스크림 -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/bg_hero_scrim" />
 
-            <TextView
-                android:id="@+id/tvStampCount"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
-                android:text="완료한 여행: 0개"
-                android:textColor="#99FFFFFF"
-                android:textSize="14sp" />
+            <!-- 텍스트 콘텐츠 (하단 정렬) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:gravity="bottom"
+                android:padding="24dp">
 
-        </LinearLayout>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="My Passport"
+                    android:textColor="@android:color/white"
+                    android:textSize="32sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="-0.02"
+                    android:shadowColor="#80000000"
+                    android:shadowDx="0"
+                    android:shadowDy="1"
+                    android:shadowRadius="4" />
+
+                <TextView
+                    android:id="@+id/tvStampCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="완료한 여행: 0개"
+                    android:textColor="#CCEEFF"
+                    android:textSize="14sp" />
+
+            </LinearLayout>
+
+        </FrameLayout>
 
         <!-- 섹션 헤더 -->
         <LinearLayout
@@ -105,7 +120,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="✈️"
-                android:textSize="48sp" />
+                android:textSize="52sp" />
 
             <TextView
                 android:layout_width="wrap_content"
