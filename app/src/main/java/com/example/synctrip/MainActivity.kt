@@ -3,11 +3,12 @@ package com.example.synctrip
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import android.widget.PopupMenu
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.GravityCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -20,6 +21,7 @@ import retrofit2.Response
 
 class MainActivity : AppCompatActivity() {
 
+    private lateinit var drawerLayout: DrawerLayout
     private lateinit var rvRoomList: RecyclerView
     private lateinit var tvEmpty: android.widget.TextView
     private val roomList = mutableListOf<Room>()
@@ -34,7 +36,9 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
-        handleDeepLink(intent)     // ← 앱이 꺼진 상태에서 링크 클릭 시 처리
+        handleDeepLink(intent)
+
+        drawerLayout = findViewById(R.id.drawerLayout)
 
         tvEmpty = findViewById(R.id.tvEmpty)
         rvRoomList = findViewById(R.id.rvRoomList)
@@ -99,21 +103,43 @@ class MainActivity : AppCompatActivity() {
                 .show()
         }
 
-        findViewById<View>(R.id.btnMenu).setOnClickListener { anchor ->
-            val popup = PopupMenu(this, anchor)
-            popup.menuInflater.inflate(R.menu.menu_main, popup.menu)
-            popup.setOnMenuItemClickListener { item ->
-                when (item.itemId) {
-                    R.id.menuLogout  -> { showLogoutDialog(); true }
-                    R.id.menuProfile -> { android.widget.Toast.makeText(this, "준비 중입니다", android.widget.Toast.LENGTH_SHORT).show(); true }
-                    R.id.menuPassport -> { android.widget.Toast.makeText(this, "준비 중입니다", android.widget.Toast.LENGTH_SHORT).show(); true }
-                    R.id.menuSettings -> { android.widget.Toast.makeText(this, "준비 중입니다", android.widget.Toast.LENGTH_SHORT).show(); true }
-                    else -> false
-                }
-            }
-            popup.show()
+        findViewById<View>(R.id.btnMenu).setOnClickListener {
+            drawerLayout.openDrawer(GravityCompat.END)
         }
 
+        setupDrawerMenuListeners()
+    }
+
+    private fun setupDrawerMenuListeners() {
+        drawerLayout.findViewById<View>(R.id.menuNavProfile).setOnClickListener {
+            drawerLayout.closeDrawer(GravityCompat.END)
+            android.widget.Toast.makeText(this, "준비 중입니다", android.widget.Toast.LENGTH_SHORT).show()
+        }
+
+        drawerLayout.findViewById<View>(R.id.menuNavPassport).setOnClickListener {
+            drawerLayout.closeDrawer(GravityCompat.END)
+            android.widget.Toast.makeText(this, "준비 중입니다", android.widget.Toast.LENGTH_SHORT).show()
+        }
+
+        drawerLayout.findViewById<View>(R.id.menuNavNotifications).setOnClickListener {
+            drawerLayout.closeDrawer(GravityCompat.END)
+            android.widget.Toast.makeText(this, "준비 중입니다", android.widget.Toast.LENGTH_SHORT).show()
+        }
+
+        drawerLayout.findViewById<View>(R.id.menuNavSettings).setOnClickListener {
+            drawerLayout.closeDrawer(GravityCompat.END)
+            android.widget.Toast.makeText(this, "준비 중입니다", android.widget.Toast.LENGTH_SHORT).show()
+        }
+
+        drawerLayout.findViewById<View>(R.id.menuNavLogout).setOnClickListener {
+            drawerLayout.closeDrawer(GravityCompat.END)
+            showLogoutDialog()
+        }
+
+        drawerLayout.findViewById<View>(R.id.menuNavWithdraw).setOnClickListener {
+            drawerLayout.closeDrawer(GravityCompat.END)
+            showWithdrawDialog()
+        }
     }
 
     private fun showLogoutDialog() {
@@ -121,6 +147,10 @@ class MainActivity : AppCompatActivity() {
             .setTitle("로그아웃")
             .setMessage("정말 로그아웃 할까요?")
             .setPositiveButton("로그아웃") { _, _ ->
+                RetrofitClient.api.logout().enqueue(object : Callback<Void> {
+                    override fun onResponse(call: Call<Void>, response: Response<Void>) {}
+                    override fun onFailure(call: Call<Void>, t: Throwable) {}
+                })
                 TokenManager.clear(this)
                 val intent = Intent(this, LoginActivity::class.java)
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -130,9 +160,30 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
+    private fun showWithdrawDialog() {
+        android.app.AlertDialog.Builder(this)
+            .setTitle("회원 탈퇴")
+            .setMessage("정말 탈퇴할까요?\n탈퇴하면 모든 여행 데이터가 삭제되며 복구할 수 없어요.")
+            .setPositiveButton("탈퇴") { _, _ ->
+                RetrofitClient.api.withdraw().enqueue(object : Callback<Void> {
+                    override fun onResponse(call: Call<Void>, response: Response<Void>) {
+                        TokenManager.clear(this@MainActivity)
+                        val intent = Intent(this@MainActivity, LoginActivity::class.java)
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        startActivity(intent)
+                    }
+                    override fun onFailure(call: Call<Void>, t: Throwable) {
+                        android.widget.Toast.makeText(this@MainActivity, "탈퇴 처리 실패. 다시 시도해주세요.", android.widget.Toast.LENGTH_SHORT).show()
+                    }
+                })
+            }
+            .setNegativeButton("취소", null)
+            .show()
+    }
+
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        setIntent(intent)          // ← 현재 intent 최신화 (없으면 구버전 intent로 처리됨)
+        setIntent(intent)
         handleDeepLink(intent)
     }
 
@@ -140,7 +191,7 @@ class MainActivity : AppCompatActivity() {
         val data = intent.data ?: return
         val code = data.getQueryParameter("code") ?: return
         if (code.isEmpty()) return
-        intent.data = null         // ← 처리 후 즉시 지워서 onResume 재진입 시 재호출 방지
+        intent.data = null
         showJoinDialog(code)
     }
 
@@ -172,6 +223,16 @@ class MainActivity : AppCompatActivity() {
             }
             .setNegativeButton("취소", null)
             .show()
+    }
+
+    @Suppress("OVERRIDE_DEPRECATION")
+    override fun onBackPressed() {
+        if (drawerLayout.isDrawerOpen(GravityCompat.END)) {
+            drawerLayout.closeDrawer(GravityCompat.END)
+        } else {
+            @Suppress("DEPRECATION")
+            super.onBackPressed()
+        }
     }
 
     override fun onResume() {
@@ -235,7 +296,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showRoomOptions(room: Room, anchor: View) {
-        val popup = PopupMenu(this, anchor)
+        val popup = android.widget.PopupMenu(this, anchor)
         popup.menu.add(0, 0, 0, "방 삭제")
         popup.setOnMenuItemClickListener { item ->
             if (item.itemId == 0) confirmDeleteRoom(room)

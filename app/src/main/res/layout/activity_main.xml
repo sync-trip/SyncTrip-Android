@@ -1,148 +1,163 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout
+<androidx.drawerlayout.widget.DrawerLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/main"
+    android:id="@+id/drawerLayout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/background">
+    android:layout_height="match_parent">
 
-    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-        android:id="@+id/swipeRefresh"
+    <!-- 메인 콘텐츠 -->
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:id="@+id/main"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:background="@color/background">
 
-    <androidx.core.widget.NestedScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <LinearLayout
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            android:id="@+id/swipeRefresh"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingBottom="120dp">
+            android:layout_height="match_parent">
 
-            <!-- TopAppBar -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="64dp"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:paddingHorizontal="20dp"
-                android:background="@color/surface">
+        <androidx.core.widget.NestedScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="SyncTrip"
-                    android:textColor="@color/primary"
-                    android:textSize="22sp"
-                    android:textStyle="bold" />
-
-                <ImageButton
-                    android:id="@+id/btnMenu"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:src="@drawable/ic_menu"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:tint="@color/text_primary"
-                    android:contentDescription="메뉴" />
-
-            </LinearLayout>
-
-            <!-- Display 타이틀 -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:paddingHorizontal="20dp"
-                android:paddingTop="16dp"
-                android:paddingBottom="8dp">
+                android:paddingBottom="120dp">
 
+                <!-- TopAppBar -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="64dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="20dp"
+                    android:background="@color/surface">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="SyncTrip"
+                        android:textColor="@color/primary"
+                        android:textSize="22sp"
+                        android:textStyle="bold" />
+
+                    <ImageButton
+                        android:id="@+id/btnMenu"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:src="@drawable/ic_menu"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:tint="@color/text_primary"
+                        android:contentDescription="메뉴" />
+
+                </LinearLayout>
+
+                <!-- Display 타이틀 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingHorizontal="20dp"
+                    android:paddingTop="16dp"
+                    android:paddingBottom="8dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="SyncTrip"
+                        android:textColor="@color/text_primary"
+                        android:textSize="36sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="-0.02" />
+
+                </LinearLayout>
+
+                <!-- My Trip Bands 섹션 -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="SyncTrip"
+                    android:layout_marginHorizontal="20dp"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="12dp"
+                    android:text="내 여행 밴드"
                     android:textColor="@color/text_primary"
-                    android:textSize="36sp"
-                    android:textStyle="bold"
-                    android:letterSpacing="-0.02" />
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+                <!-- 방 없을 때 -->
+                <TextView
+                    android:id="@+id/tvEmpty"
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp"
+                    android:gravity="center"
+                    android:text="아직 참여 중인 여행이 없어요&#10;새로운 방을 만들어보세요!"
+                    android:textColor="@color/text_hint"
+                    android:textSize="15sp"
+                    android:lineSpacingMultiplier="1.4"
+                    android:visibility="gone" />
+
+                <!-- 방 목록 가로 스크롤 -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvRoomList"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:clipToPadding="false"
+                    android:paddingHorizontal="14dp"
+                    android:paddingBottom="8dp"
+                    android:orientation="horizontal" />
 
             </LinearLayout>
 
-            <!-- My Trip Bands 섹션 -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="20dp"
-                android:layout_marginTop="20dp"
-                android:layout_marginBottom="12dp"
-                android:text="내 여행 밴드"
-                android:textColor="@color/text_primary"
-                android:textSize="20sp"
-                android:textStyle="bold" />
+        </androidx.core.widget.NestedScrollView>
 
-            <!-- 방 없을 때 -->
-            <TextView
-                android:id="@+id/tvEmpty"
-                android:layout_width="match_parent"
-                android:layout_height="200dp"
-                android:gravity="center"
-                android:text="아직 참여 중인 여행이 없어요&#10;새로운 방을 만들어보세요!"
-                android:textColor="@color/text_hint"
-                android:textSize="15sp"
-                android:lineSpacingMultiplier="1.4"
-                android:visibility="gone" />
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
-            <!-- 방 목록 가로 스크롤 -->
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rvRoomList"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:clipToPadding="false"
-                android:paddingHorizontal="14dp"
-                android:paddingBottom="8dp"
-                android:orientation="horizontal" />
+        <!-- FAB: 초대코드로 들어가기 -->
+        <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+            android:id="@+id/btnJoinRoom"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_marginBottom="20dp"
+            android:layout_marginEnd="170dp"
+            android:text="초대코드로 들어가기"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="@color/primary"
+            app:backgroundTint="@color/surface"
+            app:cornerRadius="28dp"
+            app:strokeColor="@color/primary"
+            app:strokeWidth="1.5dp" />
 
-        </LinearLayout>
+        <!-- FAB: 방 만들기 -->
+        <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+            android:id="@+id/btnNext"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_margin="20dp"
+            android:text="방 만들기"
+            android:textColor="@color/on_primary_container"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            app:backgroundTint="@color/primary_container"
+            app:cornerRadius="28dp"
+            app:strokeWidth="0dp"
+            app:icon="@android:drawable/ic_input_add"
+            app:iconTint="@color/on_primary_container" />
 
-    </androidx.core.widget.NestedScrollView>
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
-    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+    <!-- 사이드 드로어 패널 -->
+    <include
+        layout="@layout/nav_drawer"
+        android:layout_width="280dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="end" />
 
-    <!-- FAB: 초대코드로 들어가기 -->
-    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-        android:id="@+id/btnJoinRoom"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_marginBottom="20dp"
-        android:layout_marginEnd="170dp"
-        android:text="초대코드로 들어가기"
-        android:textSize="14sp"
-        android:textStyle="bold"
-        android:textColor="@color/primary"
-        app:backgroundTint="@color/surface"
-        app:cornerRadius="28dp"
-        app:strokeColor="@color/primary"
-        app:strokeWidth="1.5dp" />
-
-    <!-- FAB: 방 만들기 -->
-    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-        android:id="@+id/btnNext"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="20dp"
-        android:text="방 만들기"
-        android:textColor="@color/on_primary_container"
-        android:textSize="14sp"
-        android:textStyle="bold"
-        app:backgroundTint="@color/primary_container"
-        app:cornerRadius="28dp"
-        app:strokeWidth="0dp"
-        app:icon="@android:drawable/ic_input_add"
-        app:iconTint="@color/on_primary_container" />
-
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+</androidx.drawerlayout.widget.DrawerLayout>
